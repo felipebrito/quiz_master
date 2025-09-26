@@ -1,0 +1,55 @@
+# Task ID: 7
+# Title: Implementação da Lógica de Jogo e Máquina de Estados no Backend
+# Status: pending
+# Dependencies: 2, 6
+# Priority: high
+# Description: Desenvolver a lógica central do jogo no servidor, incluindo a criação de uma nova partida, gerenciamento de rodadas, processamento de respostas e determinação do vencedor. Esta lógica será controlada por eventos do Socket.IO.
+# Details:
+No servidor Socket.IO, crie uma máquina de estados para o jogo (`waiting`, `active`, `finished`). Ao receber o evento 'start_game' do admin com os 3 IDs de participantes, crie uma nova entrada na tabela `Game` e `GameParticipant`. Emita um evento 'game_started' para os clientes relevantes (jogadores e tela pública). Crie uma função para buscar 8 perguntas aleatórias e avançar as rodadas com um temporizador (`setTimeout`).
+
+# Test Strategy:
+Criar testes unitários (usando Vitest ou Jest) para a máquina de estados do jogo. Simular o início de um jogo, o avanço de rodadas e o término. Usar um cliente Socket.IO de teste para emitir eventos 'start_game' e verificar se os eventos corretos ('game_started', 'new_round') são emitidos em resposta.
+
+# Subtasks:
+## 1. Definição dos Estados e Transições da Máquina de Estados [pending]
+### Dependencies: None
+### Description: Modelar os estados principais do jogo ('waiting', 'active', 'finished') e mapear todas as transições possíveis entre eles, considerando eventos como início do jogo, avanço de rodada e término.
+### Details:
+Documentar os estados e criar um diagrama de transição. Definir as condições para cada mudança de estado e os eventos que disparam essas transições.
+
+## 2. Implementação do Evento 'start_game' e Criação das Entidades Game/GameParticipant [pending]
+### Dependencies: 7.1
+### Description: Desenvolver o handler do evento 'start_game' no servidor, criando uma nova entrada na tabela Game e associando os participantes na tabela GameParticipant.
+### Details:
+Receber os IDs dos participantes, criar os registros no banco de dados e inicializar o estado do jogo para 'waiting'.
+
+## 3. Emissão dos Eventos Socket.IO para os Clientes [pending]
+### Dependencies: 7.2
+### Description: Configurar o backend para emitir eventos como 'game_started', 'new_round' e 'game_finished' para os clientes relevantes (jogadores e tela pública) conforme o progresso do jogo.
+### Details:
+Utilizar os canais e namespaces do Socket.IO para garantir que apenas os clientes corretos recebam os eventos. Validar a estrutura dos payloads enviados.
+
+## 4. Seleção Aleatória de Perguntas para a Partida [pending]
+### Dependencies: 7.2
+### Description: Implementar uma função que busca 8 perguntas aleatórias do banco de dados para cada nova partida iniciada.
+### Details:
+Garantir que as perguntas não se repitam e estejam adequadas ao contexto do jogo. Associar as perguntas à partida criada.
+
+## 5. Controle de Rodadas e Temporizador [pending]
+### Dependencies: 7.3, 7.4
+### Description: Desenvolver o mecanismo para avançar as rodadas do jogo automaticamente, utilizando temporizadores (setTimeout) e controlando o tempo de resposta dos jogadores.
+### Details:
+Gerenciar o início e fim de cada rodada, disparando eventos e atualizando o estado do jogo conforme o tempo expira.
+
+## 6. Testes Unitários da Máquina de Estados [pending]
+### Dependencies: 7.1, 7.5
+### Description: Criar testes automatizados para validar as transições de estados, eventos e integridade da lógica central do jogo.
+### Details:
+Utilizar frameworks como Vitest ou Jest para simular cenários de jogo, verificando se os estados e eventos estão corretos.
+
+## 7. Simulação de Partidas para Validação [pending]
+### Dependencies: 7.6
+### Description: Executar partidas simuladas no ambiente de desenvolvimento para validar o fluxo completo do jogo, desde o início até a finalização.
+### Details:
+Utilizar clientes de teste Socket.IO para emitir eventos e monitorar as respostas do backend, garantindo que todos os requisitos funcionais estejam atendidos.
+

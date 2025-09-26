@@ -1,0 +1,11 @@
+# Task ID: 12
+# Title: Estilização Final, Animações e Polimento Geral
+# Status: pending
+# Dependencies: 11
+# Priority: low
+# Description: Aplicar o tema visual 'dark brutalist básico' em todas as interfaces (totem, dashboard, jogo, tela pública), adicionar animações de celebração para o vencedor e realizar um polimento geral de usabilidade e performance.
+# Details:
+Use o Tailwind CSS, configurado pelo `shadcn/ui`, para aplicar um tema escuro consistente, com fontes de alto contraste e bordas nítidas. Crie animações de celebração para o vencedor na tela pública usando CSS keyframes ou uma biblioteca leve como `framer-motion`. Revise todos os fluxos de usuário para garantir que o feedback visual seja imediato e a experiência seja fluida, conforme os critérios de qualidade do MVP.
+
+# Test Strategy:
+Realizar testes de usabilidade com usuários-alvo, coletando feedback sobre a clareza e apelo visual da interface. Auditar a performance da aplicação usando o Lighthouse no Chrome DevTools, focando em métricas como LCP e TBT. Validar a consistência visual em todas as telas e em diferentes dispositivos.

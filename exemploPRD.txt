@@ -1,0 +1,196 @@
+<context>
+# Overview  
+O Quiz Show Interativo é um sistema de entretenimento digital que simula um programa de TV de perguntas e respostas. O produto resolve a necessidade de criar uma experiência imersiva e automatizada para eventos, feiras, ou estabelecimentos que desejam oferecer entretenimento interativo aos visitantes.
+
+O sistema permite que até 3 participantes simultâneos compitam em tempo real, com cadastro automatizado via totem, gerenciamento administrativo simplificado, e exibição pública dos resultados. A solução é valiosa por automatizar completamente o fluxo do jogo, eliminando a necessidade de intervenção manual durante as partidas e proporcionando uma experiência visual impactante.
+
+# Core Features  
+**Totem de Cadastro Automatizado**
+- Captura de selfie via webcam para identificação visual
+- Formulário de cadastro simplificado (Nome, Cidade, Estado)
+- Registro automático no banco de dados com status de elegibilidade
+- Interface touch-friendly para uso público
+
+**Dashboard Administrativo**
+- Visualização da fila de participantes cadastrados
+- Ferramentas de edição e exclusão de participantes
+- Seleção intuitiva de 3 jogadores por partida
+- Controle de início de partidas com um clique
+
+**Sistema de Jogo Automatizado**
+- Fluxo completamente automático após início da partida
+- 8 rodadas de perguntas com alternativas A, B, C
+- Sincronização em tempo real entre todos os jogadores
+- Processamento automático de respostas e pontuação
+- Animações e efeitos sonoros para engajamento
+
+**Sistema de Ranking e Exibição Pública**
+- Cálculo automático de pontuação acumulada
+- Exibição do ranking atualizado no modo idle
+- Animações de celebração para o campeão
+- Interface visual impactante com tema dark brutalist
+
+# User Experience  
+**Personas Principais:**
+- **Participante/Jogador**: Visitante que deseja participar do quiz, busca entretenimento rápido e interativo
+- **Recepcionista/Admin**: Funcionário responsável por gerenciar participantes e iniciar partidas, precisa de controle simples e eficiente
+- **Público**: Espectadores que assistem ao display público, buscam entretenimento visual e acompanhamento dos resultados
+
+**Fluxos de Usuário:**
+1. **Cadastro no Totem**: Selfie → Formulário → Confirmação → Aguardar na fila
+2. **Gerenciamento Admin**: Visualizar fila → Editar/Excluir → Selecionar jogadores → Iniciar partida
+3. **Participação no Jogo**: Aguardar início → Responder perguntas → Ver resultados → Aguardar próxima rodada
+4. **Exibição Pública**: Assistir abertura → Acompanhar perguntas → Ver resultados → Celebrar campeão
+
+**Considerações de UI/UX:**
+- Interface touch-friendly para totem
+- Controles visuais claros para administração
+- Botões grandes e acessíveis para jogadores
+- Animações suaves e feedback visual imediato
+- Tema dark brutalist para impacto visual
+</context>
+
+<PRD>
+# Technical Architecture  
+**Componentes do Sistema:**
+- **Frontend**: Next.js 14+ com TypeScript, shadcn/ui para componentes, Framer Motion para animações
+- **Backend**: API Routes do Next.js com Socket.IO para comunicação em tempo real
+- **Banco de Dados**: Prisma ORM com SQLite (desenvolvimento) / PostgreSQL (produção)
+- **WebRTC**: Para captura de webcam no totem
+- **Audio**: Web Audio API para efeitos sonoros
+
+**Modelos de Dados:**
+- **Participant**: id, name, city, state, photo_url, status, created_at, updated_at
+- **Game**: id, status, current_round, started_at, ended_at, winner_id
+- **GameParticipant**: id, game_id, participant_id, position, score
+- **Question**: id, text, option_a, option_b, option_c, correct_answer, difficulty
+- **Answer**: id, game_id, participant_id, question_id, answer, response_time, is_correct
+
+**APIs e Integrações:**
+- REST API para CRUD de participantes e jogos
+- WebSocket para sincronização em tempo real
+- Upload de imagens para fotos dos participantes
+- Sistema de perguntas (inicialmente hardcoded, futuramente via API externa)
+
+**Requisitos de Infraestrutura:**
+- Servidor web para hospedagem da aplicação
+- Banco de dados com suporte a transações
+- CDN para assets estáticos (imagens, áudios)
+- SSL para captura segura de webcam
+- Hardware específico: totem com webcam, joysticks/teclas mapeadas, display público
+
+# Development Roadmap  
+**Fase 1 - MVP (Fundação)**
+- Configuração do projeto Next.js com TypeScript
+- Implementação do banco de dados com Prisma
+- Interface básica do totem de cadastro
+- Sistema de captura de webcam
+- Dashboard administrativo simples
+- Estrutura básica de perguntas e respostas
+
+**Fase 2 - Core Game (Funcionalidade Principal)**
+- Sistema de Socket.IO para sincronização
+- Lógica de jogo com 8 rodadas
+- Interface de jogo para 3 jogadores
+- Sistema de pontuação e ranking
+- Animações básicas com Framer Motion
+- Modo idle com exibição pública
+
+**Fase 3 - Polish & Experience (Refinamento)**
+- Tema visual dark brutalist completo
+- Efeitos sonoros e feedback audiovisual
+- Animações de celebração e confetes
+- Otimizações de performance
+- Testes de usabilidade
+- Documentação e deploy
+
+**Fase 4 - Extensões Futuras (Não MVP)**
+- Integração com APIs externas de perguntas
+- Sistema de estatísticas detalhadas
+- Suporte a mais de 3 jogadores
+- Customização de temas visuais
+- Sistema de torneios
+- Analytics e relatórios
+
+# Logical Dependency Chain
+**Ordem Lógica de Desenvolvimento:**
+
+1. **Fundação Técnica** (Primeiro)
+   - Setup do projeto Next.js + TypeScript
+   - Configuração do Prisma + banco de dados
+   - Estrutura básica de componentes shadcn/ui
+   - Sistema de roteamento e layout
+
+2. **Cadastro e Gerenciamento** (Segundo)
+   - Interface do totem de cadastro
+   - Captura de webcam
+   - Dashboard administrativo
+   - CRUD de participantes
+
+3. **Sistema de Jogo Básico** (Terceiro)
+   - Estrutura de perguntas e respostas
+   - Lógica de pontuação
+   - Interface de jogo simples
+   - Sistema de Socket.IO
+
+4. **Sincronização e Tempo Real** (Quarto)
+   - Implementação completa do Socket.IO
+   - Sincronização de respostas
+   - Controle de tempo das rodadas
+   - Processamento de primeiro acerto
+
+5. **Experiência Visual** (Quinto)
+   - Tema dark brutalist
+   - Animações com Framer Motion
+   - Efeitos sonoros
+   - Modo idle e exibição pública
+
+6. **Polish e Otimização** (Sexto)
+   - Testes de performance
+   - Ajustes de UX
+   - Documentação
+   - Deploy e configuração
+
+# Risks and Mitigations  
+**Desafios Técnicos:**
+- **Sincronização de tempo**: Implementar sistema robusto de timestamping e validação de respostas
+- **Performance com múltiplos jogadores**: Otimizar Socket.IO e implementar debouncing
+- **Captura de webcam**: Fallbacks para diferentes navegadores e dispositivos
+- **Mitigação**: Testes extensivos, implementação de fallbacks, monitoramento de performance
+
+**Definição do MVP:**
+- **Risco**: Escopo muito amplo inicialmente
+- **Mitigação**: Focar primeiro no fluxo básico (cadastro → jogo → resultado) sem animações complexas
+- **Validação**: Testes com usuários reais em cada fase
+
+**Restrições de Recursos:**
+- **Hardware específico**: Dependência de totem, webcam, joysticks
+- **Mitigação**: Desenvolvimento com simuladores e fallbacks para hardware padrão
+- **Testes**: Ambiente de desenvolvimento que simula o hardware real
+
+**Complexidade de Sincronização:**
+- **Risco**: Dificuldade em manter todos os clientes sincronizados
+- **Mitigação**: Implementação de sistema de heartbeat e reconexão automática
+- **Backup**: Sistema de fallback para casos de desconexão
+
+# Appendix  
+**Pesquisas e Especificações Técnicas:**
+- Socket.IO para comunicação em tempo real com fallback para polling
+- WebRTC para captura de webcam com fallback para getUserMedia
+- Prisma ORM para type-safety e migrações automáticas
+- shadcn/ui para componentes acessíveis e customizáveis
+- Framer Motion para animações performáticas
+
+**Considerações de Acessibilidade:**
+- Contraste adequado no tema dark
+- Botões grandes para facilitar interação
+- Feedback visual e sonoro para todas as ações
+- Suporte a diferentes tamanhos de tela
+
+**Métricas de Sucesso:**
+- Tempo de cadastro < 30 segundos
+- Latência de resposta < 100ms
+- Taxa de sucesso de captura de webcam > 95%
+- Satisfação do usuário > 4.5/5
+- Uptime do sistema > 99%
+</PRD>

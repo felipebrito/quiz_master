@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Desenvolvimento das API Routes para CRUD de Participantes
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Criar os endpoints da API RESTful usando as API Routes do Next.js para gerenciar o ciclo de vida dos participantes (Criar, Ler, Atualizar, Excluir).
+# Details:
+Crie rotas de API em `/pages/api/participants/`. Implemente `GET /api/participants` para listar todos os participantes com status 'waiting'. Implemente `POST /api/participants` para criar um novo participante, incluindo validação de dados com Zod. Implemente `PUT /api/participants/[id]` para editar e `DELETE /api/participants/[id]` para remover. Use o Prisma Client para interagir com o banco de dados.
+
+# Test Strategy:
+Testar cada endpoint usando uma ferramenta de cliente API como Postman ou Insomnia. Verificar se os códigos de status HTTP (200, 201, 400, 404) estão corretos e se os dados são persistidos e retornados conforme esperado. Validar as regras de validação de entrada.

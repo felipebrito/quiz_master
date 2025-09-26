@@ -1,0 +1,11 @@
+# Task ID: 10
+# Title: Desenvolvimento da Tela de Exibição Pública
+# Status: pending
+# Dependencies: 9
+# Priority: medium
+# Description: Criar a interface para a tela pública que exibe o estado atual do jogo em tempo real, incluindo perguntas, respostas, pontuações e a celebração do vencedor.
+# Details:
+Crie uma página dedicada (`/display`). Esta página se conectará ao Socket.IO e ouvirá todos os eventos de estado do jogo ('game_started', 'new_question', 'round_result', 'game_finished'). Projete a interface para ser visualmente impactante e legível à distância. Implemente o modo 'idle' que, por padrão, exibe um ranking dos melhores jogadores de partidas anteriores. Use CSS para animações simples de transição.
+
+# Test Strategy:
+Manter a tela de exibição pública aberta enquanto um jogo está em andamento. Verificar se a tela se sincroniza corretamente com as ações do jogo: exibe a pergunta correta, mostra os resultados da rodada quando disponíveis e exibe a tela de vencedor no final. Testar se a tela retorna ao modo 'idle' após o término do jogo.

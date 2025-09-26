@@ -1,0 +1,43 @@
+# Task ID: 2
+# Title: Implementação do Servidor Socket.IO no Next.js
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Configurar e integrar um servidor Socket.IO dentro da arquitetura do Next.js para gerenciar a comunicação em tempo real entre o servidor, os jogadores, o dashboard administrativo e a tela pública.
+# Details:
+Instale `socket.io` e `socket.io-client`. Crie um endpoint de API customizado, por exemplo, em `pages/api/socket.ts`. Neste arquivo, verifique se o servidor Socket.IO já não está anexado ao servidor HTTP global para evitar múltiplas instâncias em ambiente de desenvolvimento. Exponha os eventos básicos como 'connection', 'disconnect', e crie namespaces (`/admin`, `/game`) para organizar a comunicação.
+
+# Test Strategy:
+Criar uma página de teste simples que se conecta ao servidor Socket.IO ao carregar. Verificar no console do servidor se a conexão foi estabelecida e se os eventos de 'connect' e 'disconnect' são registrados corretamente quando a página é carregada e fechada.
+
+# Subtasks:
+## 1. Instalação das dependências socket.io e socket.io-client [pending]
+### Dependencies: None
+### Description: Instalar as bibliotecas necessárias para o funcionamento do Socket.IO tanto no backend quanto no frontend do projeto Next.js.
+### Details:
+Executar os comandos `npm install socket.io` e `npm install socket.io-client` no diretório do projeto para adicionar as dependências.
+
+## 2. Criação do endpoint customizado em /pages/api/socket.ts [pending]
+### Dependencies: 2.1
+### Description: Criar um endpoint de API dedicado para inicializar e expor o servidor Socket.IO dentro da arquitetura do Next.js.
+### Details:
+Adicionar o arquivo `pages/api/socket.ts` e configurar a exportação padrão para lidar com as requisições HTTP e anexar o servidor Socket.IO ao servidor HTTP do Next.js.
+
+## 3. Implementação da lógica para evitar múltiplas instâncias no ambiente de desenvolvimento [pending]
+### Dependencies: 2.2
+### Description: Garantir que o servidor Socket.IO não seja inicializado múltiplas vezes durante o hot reload do Next.js em desenvolvimento.
+### Details:
+No arquivo do endpoint, verificar se já existe uma instância do Socket.IO anexada ao servidor global antes de criar uma nova, utilizando variáveis globais ou propriedades do objeto global.
+
+## 4. Exposição dos eventos básicos (connection/disconnect) [pending]
+### Dependencies: 2.3
+### Description: Configurar o servidor Socket.IO para emitir e escutar os eventos básicos de conexão e desconexão dos clientes.
+### Details:
+No endpoint, adicionar listeners para os eventos 'connection' e 'disconnect', registrando logs ou executando lógica básica ao conectar/desconectar um socket.
+
+## 5. Criação dos namespaces /admin e /game [pending]
+### Dependencies: 2.4
+### Description: Organizar a comunicação em tempo real criando namespaces separados para administração e para o jogo.
+### Details:
+No servidor Socket.IO, utilizar `io.of('/admin')` e `io.of('/game')` para criar e configurar os namespaces, adicionando listeners de conexão e lógica específica para cada canal.
+

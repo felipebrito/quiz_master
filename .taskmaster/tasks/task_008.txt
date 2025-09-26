@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Construção da Interface de Jogo para os Participantes
+# Status: pending
+# Dependencies: 7
+# Priority: medium
+# Description: Desenvolver a tela que os 3 jogadores verão durante a partida, mostrando a pergunta atual, as alternativas (A, B, C), e permitindo que eles enviem suas respostas.
+# Details:
+Crie uma página de jogo dinâmica (`/game/[gameId]`). O cliente Socket.IO nesta página deve ouvir por eventos como 'new_question' e 'round_result'. Ao receber uma nova pergunta, exiba o texto e as três alternativas clicáveis. Ao clicar em uma resposta, emita um evento 'submit_answer' para o servidor com o ID do jogo, ID do participante, a resposta e um timestamp local.
+
+# Test Strategy:
+Abrir 3 janelas de navegador na página do jogo. Iniciar um jogo pelo dashboard administrativo. Verificar se as 3 janelas recebem a mesma pergunta simultaneamente. Clicar em respostas em cada janela e verificar no console do servidor se os eventos 'submit_answer' são recebidos corretamente.

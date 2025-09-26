@@ -1,0 +1,11 @@
+# Task ID: 4
+# Title: Construção da Interface do Totem de Cadastro
+# Status: pending
+# Dependencies: 3
+# Priority: medium
+# Description: Desenvolver a interface de usuário (UI) para o totem de cadastro, incluindo o formulário de registro (Nome, Cidade, Estado) e a funcionalidade de captura de selfie via webcam.
+# Details:
+Crie uma nova página em Next.js para o totem. Use componentes `shadcn/ui` (Input, Button, Card) para construir um formulário responsivo e touch-friendly. Integre a biblioteca `react-webcam` para a captura de imagem. Implemente a lógica para solicitar permissão da câmera e exibir o feed de vídeo. Ao tirar a foto, converta a imagem para Base64 ou Blob para o upload.
+
+# Test Strategy:
+Testar a interface em diferentes resoluções de tela para garantir a responsividade. Validar o formulário, garantindo que campos obrigatórios são exigidos. Testar o fluxo de permissão da câmera em navegadores modernos (Chrome, Firefox). Verificar se a selfie é capturada e exibida corretamente na tela.

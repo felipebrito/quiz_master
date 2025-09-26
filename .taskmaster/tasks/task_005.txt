@@ -1,0 +1,43 @@
+# Task ID: 5
+# Title: Implementação do Upload de Imagem e Finalização do Cadastro
+# Status: pending
+# Dependencies: 4
+# Priority: medium
+# Description: Criar a lógica de backend para receber a imagem da selfie, salvá-la e associá-la ao novo participante no banco de dados. Implementar o fallback para upload de arquivo caso a webcam falhe.
+# Details:
+Crie uma API route (`/api/upload`) para lidar com o upload da imagem. Para o MVP, salve a imagem no sistema de arquivos local, numa pasta pública como `/public/uploads`, e armazene o caminho (`/uploads/filename.jpg`) no campo `photo_url` do participante. Implemente a lógica no frontend que, ao submeter o formulário, primeiro faz o upload da imagem, obtém a URL e então envia os dados do formulário junto com a URL para a API de criação de participante. Adicione um componente `<input type='file' />` como fallback.
+
+# Test Strategy:
+Realizar um cadastro completo pelo totem. Verificar se a imagem é salva na pasta correta no servidor. Confirmar se o registro do participante no banco de dados contém a URL correta da foto. Testar o fluxo de fallback de upload de arquivo.
+
+# Subtasks:
+## 1. Criação da API route /api/upload [pending]
+### Dependencies: None
+### Description: Desenvolver o endpoint backend para receber requisições de upload de imagem, utilizando método POST e middleware apropriado para processar arquivos multipart/form-data.
+### Details:
+Implementar a rota /api/upload usando Express e Multer para aceitar arquivos enviados pelo frontend. Validar o tipo e tamanho do arquivo, retornando erro em caso de falha.
+
+## 2. Implementação da lógica de salvamento local da imagem [pending]
+### Dependencies: 5.1
+### Description: Configurar o backend para salvar a imagem recebida no sistema de arquivos local, em uma pasta pública como /public/uploads.
+### Details:
+Utilizar Multer para armazenar o arquivo na pasta /public/uploads, garantindo que o nome do arquivo seja único e acessível publicamente. Retornar o caminho relativo (/uploads/filename.jpg) na resposta da API.
+
+## 3. Associação da URL da imagem ao participante no banco de dados [pending]
+### Dependencies: 5.2
+### Description: Modificar o fluxo de cadastro para incluir o campo photo_url, associando o caminho da imagem ao registro do participante.
+### Details:
+Ao receber a URL da imagem do backend, incluir esse valor no payload enviado para a API de criação de participante. Garantir que o campo photo_url seja persistido corretamente no banco.
+
+## 4. Implementação do fallback de upload por arquivo [pending]
+### Dependencies: 5.1
+### Description: Adicionar ao frontend um componente <input type='file' /> para permitir upload manual caso a captura via webcam falhe.
+### Details:
+No formulário de cadastro, incluir o input de arquivo e lógica para detectar falha da webcam, alternando para o upload manual. Garantir que ambos os fluxos utilizem a mesma API de upload.
+
+## 5. Integração do frontend com o fluxo de upload e cadastro [pending]
+### Dependencies: 5.2, 5.3, 5.4
+### Description: Implementar no frontend a lógica para enviar a imagem, obter a URL e submeter o cadastro do participante com a URL da foto.
+### Details:
+No submit do formulário, realizar primeiro o upload da imagem, aguardar a resposta com a URL, e então enviar os dados do participante para a API de cadastro. Testar ambos os fluxos (webcam e arquivo).
+

@@ -1,0 +1,264 @@
+# Quiz Show Interativo - Diretrizes MVP
+
+## Visão Geral do Produto
+O Quiz Show Interativo é um sistema de entretenimento digital que simula um programa de TV de perguntas e respostas. O MVP deve automatizar completamente o fluxo do jogo, permitindo que até 3 participantes simultâneos compitam em tempo real, com cadastro automatizado via totem, gerenciamento administrativo simplificado, e exibição pública dos resultados.
+
+## Objetivos do MVP
+- Criar uma experiência imersiva e automatizada para eventos
+- Eliminar a necessidade de intervenção manual durante as partidas
+- Proporcionar uma experiência visual impactante
+- Validar o conceito com usuários reais
+
+## Funcionalidades Essenciais do MVP
+
+### 1. Totem de Cadastro Automatizado
+**Critérios de Aceitação:**
+- [ ] Interface touch-friendly para uso público
+- [ ] Captura de selfie via webcam com fallback para upload de arquivo
+- [ ] Formulário simplificado: Nome, Cidade, Estado
+- [ ] Registro automático no banco de dados
+- [ ] Confirmação visual do cadastro
+- [ ] Status de elegibilidade para participar
+
+**Requisitos Técnicos:**
+- WebRTC para captura de webcam
+- Fallback para getUserMedia API
+- Validação de campos obrigatórios
+- Upload seguro de imagens
+- Interface responsiva para diferentes tamanhos de tela
+
+### 2. Dashboard Administrativo
+**Critérios de Aceitação:**
+- [ ] Visualização da fila de participantes cadastrados
+- [ ] Lista com informações básicas: nome, cidade, estado, foto, status
+- [ ] Ferramentas de edição de participantes
+- [ ] Exclusão de participantes da fila
+- [ ] Seleção intuitiva de exatamente 3 jogadores
+- [ ] Botão de início de partida com confirmação
+- [ ] Feedback visual de ações realizadas
+
+**Requisitos Técnicos:**
+- Interface administrativa separada do totem
+- CRUD completo de participantes
+- Validação de seleção de jogadores
+- Sistema de notificações em tempo real
+
+### 3. Sistema de Jogo Básico
+**Critérios de Aceitação:**
+- [ ] Fluxo automático após início da partida
+- [ ] 8 rodadas de perguntas com alternativas A, B, C
+- [ ] Interface de jogo para 3 jogadores simultâneos
+- [ ] Sistema de pontuação automático
+- [ ] Processamento de respostas em tempo real
+- [ ] Exibição de resultados por rodada
+- [ ] Declaração automática do vencedor
+
+**Requisitos Técnicos:**
+- Socket.IO para sincronização em tempo real
+- Sistema de timestamping para validação de respostas
+- Lógica de pontuação baseada em velocidade e acerto
+- Interface responsiva para múltiplos dispositivos
+
+### 4. Sistema de Exibição Pública
+**Critérios de Aceitação:**
+- [ ] Modo idle com exibição de ranking
+- [ ] Exibição das perguntas durante o jogo
+- [ ] Mostrar respostas e pontuação em tempo real
+- [ ] Animações de celebração para o campeão
+- [ ] Interface visual impactante
+
+**Requisitos Técnicos:**
+- Display público separado do jogo
+- Sincronização com o estado do jogo
+- Tema dark brutalist básico
+- Animações simples com CSS/JavaScript
+
+## Arquitetura Técnica MVP
+
+### Stack Tecnológico
+- **Frontend**: Next.js 14+ com TypeScript
+- **UI Components**: shadcn/ui (versão básica)
+- **Backend**: API Routes do Next.js
+- **Real-time**: Socket.IO
+- **Database**: Prisma ORM com SQLite (desenvolvimento)
+- **Webcam**: WebRTC com fallback getUserMedia
+
+### Modelos de Dados Essenciais
+```typescript
+// Participant
+{
+  id: string
+  name: string
+  city: string
+  state: string
+  photo_url: string
+  status: 'waiting' | 'playing' | 'finished'
+  created_at: Date
+  updated_at: Date
+}
+
+// Game
+{
+  id: string
+  status: 'waiting' | 'active' | 'finished'
+  current_round: number
+  started_at: Date
+  ended_at: Date
+  winner_id: string
+}
+
+// GameParticipant
+{
+  id: string
+  game_id: string
+  participant_id: string
+  position: number
+  score: number
+}
+
+// Question
+{
+  id: string
+  text: string
+  option_a: string
+  option_b: string
+  option_c: string
+  correct_answer: 'A' | 'B' | 'C'
+  difficulty: 'easy' | 'medium' | 'hard'
+}
+
+// Answer
+{
+  id: string
+  game_id: string
+  participant_id: string
+  question_id: string
+  answer: 'A' | 'B' | 'C'
+  response_time: number
+  is_correct: boolean
+}
+```
+
+## Fluxos de Usuário MVP
+
+### 1. Fluxo do Participante
+1. Acessa o totem de cadastro
+2. Permite acesso à webcam
+3. Tira uma selfie
+4. Preenche formulário (Nome, Cidade, Estado)
+5. Confirma dados
+6. Aguarda na fila de participantes
+7. É selecionado para jogar
+8. Participa do jogo (8 rodadas)
+9. Vê resultado final
+
+### 2. Fluxo do Administrador
+1. Acessa dashboard administrativo
+2. Visualiza lista de participantes cadastrados
+3. Edita/exclui participantes conforme necessário
+4. Seleciona 3 jogadores para a partida
+5. Inicia a partida
+6. Monitora o progresso do jogo
+7. Vê resultado final
+
+### 3. Fluxo do Display Público
+1. Exibe modo idle com ranking
+2. Mostra abertura da partida
+3. Exibe perguntas e alternativas
+4. Mostra respostas e pontuação
+5. Exibe resultado final e celebração
+6. Retorna ao modo idle
+
+## Critérios de Qualidade MVP
+
+### Performance
+- Tempo de cadastro < 30 segundos
+- Latência de resposta < 100ms
+- Taxa de sucesso de captura de webcam > 95%
+- Uptime do sistema > 99%
+
+### Usabilidade
+- Interface intuitiva para todas as personas
+- Feedback visual imediato para todas as ações
+- Botões grandes e acessíveis
+- Suporte a diferentes tamanhos de tela
+
+### Confiabilidade
+- Sistema de reconexão automática
+- Fallbacks para falhas de webcam
+- Validação robusta de dados
+- Tratamento de erros gracioso
+
+## Estrutura de Desenvolvimento
+
+### Fase 1: Fundação (Semanas 1-2)
+- [ ] Setup do projeto Next.js + TypeScript
+- [ ] Configuração do Prisma + SQLite
+- [ ] Estrutura básica de componentes
+- [ ] Sistema de roteamento
+- [ ] Configuração do Socket.IO
+
+### Fase 2: Cadastro e Gerenciamento (Semanas 3-4)
+- [ ] Interface do totem de cadastro
+- [ ] Sistema de captura de webcam
+- [ ] Dashboard administrativo
+- [ ] CRUD de participantes
+- [ ] Sistema de upload de imagens
+
+### Fase 3: Sistema de Jogo (Semanas 5-6)
+- [ ] Estrutura de perguntas hardcoded
+- [ ] Interface de jogo para 3 jogadores
+- [ ] Sistema de pontuação
+- [ ] Sincronização via Socket.IO
+- [ ] Lógica de 8 rodadas
+
+### Fase 4: Exibição e Polish (Semanas 7-8)
+- [ ] Display público
+- [ ] Modo idle com ranking
+- [ ] Tema visual básico
+- [ ] Animações simples
+- [ ] Testes e ajustes
+
+## Perguntas MVP (Hardcoded)
+O MVP deve incluir um conjunto de 24 perguntas (3 conjuntos de 8 para variação) cobrindo:
+- Conhecimentos gerais
+- Cultura pop
+- Geografia
+- História
+- Ciências básicas
+
+## Riscos e Mitigações MVP
+
+### Riscos Técnicos
+- **Sincronização**: Implementar sistema robusto de timestamping
+- **Webcam**: Fallbacks para diferentes navegadores
+- **Performance**: Otimizar Socket.IO e implementar debouncing
+
+### Riscos de Escopo
+- **Complexidade**: Focar no fluxo básico sem animações complexas
+- **Hardware**: Desenvolver com simuladores e fallbacks
+- **Tempo**: Validação contínua com usuários reais
+
+## Definição de Pronto (Definition of Done)
+- [ ] Funcionalidade implementada conforme critérios de aceitação
+- [ ] Testes unitários passando
+- [ ] Testes de integração funcionando
+- [ ] Interface responsiva em diferentes dispositivos
+- [ ] Performance dentro dos critérios estabelecidos
+- [ ] Documentação básica atualizada
+- [ ] Deploy em ambiente de desenvolvimento funcionando
+
+## Métricas de Sucesso MVP
+- **Funcionalidade**: 100% dos fluxos principais funcionando
+- **Performance**: Tempo de resposta < 100ms
+- **Usabilidade**: Cadastro completo em < 30 segundos
+- **Confiabilidade**: Taxa de sucesso de webcam > 95%
+- **Satisfação**: Feedback positivo de usuários de teste
+
+## Próximos Passos Pós-MVP
+- Integração com APIs externas de perguntas
+- Sistema de estatísticas detalhadas
+- Suporte a mais de 3 jogadores
+- Customização de temas visuais
+- Sistema de torneios
+- Analytics e relatórios avançados

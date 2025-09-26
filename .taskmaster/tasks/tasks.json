@@ -1,0 +1,786 @@
+{
+  "version": "1.0.0",
+  "projectName": "Quiz Show Interativo",
+  "description": "Sistema de entretenimento digital que simula um programa de TV de perguntas e respostas",
+  "tags": {
+    "master": {
+      "name": "master",
+      "description": "Main development context",
+      "createdAt": "2025-01-27T00:00:00.000Z",
+      "tasks": [
+        {
+          "id": "1",
+          "title": "Configuração do Projeto Next.js",
+          "description": "Setup inicial do projeto Next.js 14+ com TypeScript",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "details": "Configurar projeto Next.js 14+ com TypeScript, ESLint, Prettier, estrutura de pastas",
+          "testStrategy": "Verificar se o projeto inicia corretamente",
+          "subtasks": []
+        },
+        {
+          "id": "2",
+          "title": "Configuração do Banco de Dados com Prisma",
+          "description": "Implementar Prisma ORM com SQLite para desenvolvimento",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "1"
+          ],
+          "details": "Configurar Prisma ORM, criar schema.prisma com modelos de dados",
+          "testStrategy": "Executar migrações do Prisma e testar conexão",
+          "subtasks": []
+        },
+        {
+          "id": "3",
+          "title": "Setup do Socket.IO para Comunicação em Tempo Real",
+          "description": "Configurar Socket.IO para sincronização em tempo real",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "1"
+          ],
+          "details": "Instalar e configurar Socket.IO no Next.js, criar servidor WebSocket",
+          "testStrategy": "Testar conexão Socket.IO entre múltiplos clientes",
+          "subtasks": []
+        },
+        {
+          "id": "4",
+          "title": "Interface do Totem de Cadastro",
+          "description": "Criar interface touch-friendly para cadastro de participantes",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "1",
+            "2"
+          ],
+          "details": "Desenvolver interface responsiva para totem, implementar captura de webcam",
+          "testStrategy": "Testar em diferentes dispositivos touch e navegadores",
+          "subtasks": []
+        },
+        {
+          "id": "5",
+          "title": "Dashboard Administrativo",
+          "description": "Criar painel administrativo para gerenciar participantes",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "1",
+            "2"
+          ],
+          "details": "Desenvolver interface administrativa, implementar CRUD de participantes",
+          "testStrategy": "Testar todas as operações CRUD e validações",
+          "subtasks": []
+        },
+        {
+          "id": "6",
+          "title": "Sistema de Perguntas e Respostas",
+          "description": "Implementar estrutura de perguntas hardcoded e lógica de respostas",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "2"
+          ],
+          "details": "Criar conjunto de 24 perguntas hardcoded, implementar lógica de seleção",
+          "testStrategy": "Verificar se as perguntas são carregadas corretamente",
+          "subtasks": []
+        },
+        {
+          "id": "7",
+          "title": "Interface de Jogo para 3 Jogadores",
+          "description": "Desenvolver interface de jogo sincronizada para 3 jogadores",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "3",
+            "6"
+          ],
+          "details": "Criar interface responsiva para 3 jogadores, implementar exibição de perguntas",
+          "testStrategy": "Testar com 3 clientes simultâneos e verificar sincronização",
+          "subtasks": []
+        },
+        {
+          "id": "8",
+          "title": "Sistema de Pontuação e Ranking",
+          "description": "Implementar lógica de pontuação baseada em velocidade e acerto",
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [
+            "6",
+            "7"
+          ],
+          "details": "Criar algoritmo de pontuação, implementar ranking em tempo real",
+          "testStrategy": "Testar diferentes cenários de pontuação",
+          "subtasks": []
+        },
+        {
+          "id": "9",
+          "title": "Sincronização em Tempo Real",
+          "description": "Implementar sincronização completa via Socket.IO",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            "3",
+            "7",
+            "8"
+          ],
+          "details": "Implementar eventos Socket.IO para início de partida e respostas",
+          "testStrategy": "Testar sincronização com múltiplos clientes",
+          "subtasks": []
+        },
+        {
+          "id": "10",
+          "title": "Display Público e Modo Idle",
+          "description": "Criar interface de exibição pública com modo idle e ranking",
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [
+            "8",
+            "9"
+          ],
+          "details": "Desenvolver display público separado, implementar modo idle",
+          "testStrategy": "Testar exibição em diferentes tamanhos de tela",
+          "subtasks": []
+        },
+        {
+          "id": "11",
+          "title": "Tema Visual e Animações",
+          "description": "Implementar tema dark brutalist e animações básicas",
+          "status": "pending",
+          "priority": "low",
+          "dependencies": [
+            "4",
+            "5",
+            "7",
+            "10"
+          ],
+          "details": "Aplicar tema dark brutalist consistente, implementar animações",
+          "testStrategy": "Verificar consistência visual e performance",
+          "subtasks": []
+        },
+        {
+          "id": "12",
+          "title": "Testes e Deploy",
+          "description": "Realizar testes finais, otimizações e deploy do sistema",
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [
+            "11"
+          ],
+          "details": "Executar testes de integração, otimizações finais e deploy",
+          "testStrategy": "Testes completos do sistema em ambiente de produção",
+          "subtasks": []
+        }
+      ]
+    }
+  },
+  "currentTag": "master",
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Configuração da Fundação do Projeto e Banco de Dados",
+        "description": "Inicializar o projeto Next.js 14+ com TypeScript, configurar o Prisma ORM com um banco de dados SQLite e definir os esquemas de dados iniciais. Isso inclui a criação dos modelos para Participante, Jogo, Pergunta, etc., e o seeding do banco de dados com as 24 perguntas hardcoded.",
+        "details": "Use `npx create-next-app@latest --ts` para criar o projeto. Instale o Prisma: `npm install prisma --save-dev` e `npx prisma init --datasource-provider sqlite`. Defina os modelos no arquivo `prisma/schema.prisma` conforme especificado no PRD. Crie um script de seed (`prisma/seed.ts`) para popular a tabela `Question` com as 24 perguntas. Adicione o comando de seed ao `package.json`. Configure `shadcn/ui` com `npx shadcn-ui@latest init` para o sistema de componentes base.",
+        "testStrategy": "Verificar se o projeto é compilado sem erros. Executar `npx prisma migrate dev` para criar as tabelas no banco de dados SQLite. Executar o script de seed e confirmar se as 24 perguntas foram inseridas corretamente na base de dados usando o Prisma Studio (`npx prisma studio`).",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Criação do Projeto Next.js com TypeScript",
+            "description": "Inicializar um novo projeto Next.js 14+ utilizando TypeScript, garantindo que todas as dependências e configurações iniciais estejam corretas.",
+            "dependencies": [],
+            "details": "Executar o comando `npx create-next-app@latest --ts` para criar o projeto. Verificar se o arquivo `tsconfig.json` foi gerado e se o projeto compila sem erros.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Instalação e Configuração Inicial do Prisma com SQLite",
+            "description": "Instalar o Prisma como dependência de desenvolvimento e inicializar a configuração do ORM com SQLite como banco de dados.",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "Executar `npm install prisma --save-dev` e `npx prisma init --datasource-provider sqlite`. Verificar se os arquivos `prisma/schema.prisma` e `.env` foram criados corretamente.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Definição dos Modelos no schema.prisma",
+            "description": "Modelar as entidades principais (Participante, Jogo, Pergunta, etc.) no arquivo `prisma/schema.prisma` conforme especificado no PRD.",
+            "dependencies": [
+              "1.2"
+            ],
+            "details": "Editar o arquivo `prisma/schema.prisma` para definir os modelos e suas relações. Validar a sintaxe e rodar `npx prisma migrate dev` para criar as tabelas no banco de dados.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implementação do Script de Seed com as 24 Perguntas",
+            "description": "Criar um script de seed (`prisma/seed.ts`) para popular a tabela `Question` com as 24 perguntas hardcoded.",
+            "dependencies": [
+              "1.3"
+            ],
+            "details": "Desenvolver o script de seed utilizando o Prisma Client. Garantir que as perguntas sejam inseridas corretamente e que o script possa ser executado sem erros.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Configuração do Comando de Seed no package.json",
+            "description": "Adicionar o comando de seed ao arquivo `package.json` para facilitar a execução do script de seed.",
+            "dependencies": [
+              "1.4"
+            ],
+            "details": "Editar o `package.json` para incluir um script, por exemplo, `\"seed\": \"ts-node prisma/seed.ts\"`. Testar a execução do comando para garantir que o seed é realizado corretamente.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Inicialização do shadcn/ui para Sistema de Componentes Base",
+            "description": "Configurar o sistema de componentes base utilizando o shadcn/ui, preparando o projeto para o desenvolvimento das interfaces.",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "Executar `npx shadcn-ui@latest init` para inicializar o shadcn/ui. Verificar se os componentes e configurações iniciais foram adicionados corretamente ao projeto.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implementação do Servidor Socket.IO no Next.js",
+        "description": "Configurar e integrar um servidor Socket.IO dentro da arquitetura do Next.js para gerenciar a comunicação em tempo real entre o servidor, os jogadores, o dashboard administrativo e a tela pública.",
+        "details": "Instale `socket.io` e `socket.io-client`. Crie um endpoint de API customizado, por exemplo, em `pages/api/socket.ts`. Neste arquivo, verifique se o servidor Socket.IO já não está anexado ao servidor HTTP global para evitar múltiplas instâncias em ambiente de desenvolvimento. Exponha os eventos básicos como 'connection', 'disconnect', e crie namespaces (`/admin`, `/game`) para organizar a comunicação.",
+        "testStrategy": "Criar uma página de teste simples que se conecta ao servidor Socket.IO ao carregar. Verificar no console do servidor se a conexão foi estabelecida e se os eventos de 'connect' e 'disconnect' são registrados corretamente quando a página é carregada e fechada.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Instalação das dependências socket.io e socket.io-client",
+            "description": "Instalar as bibliotecas necessárias para o funcionamento do Socket.IO tanto no backend quanto no frontend do projeto Next.js.",
+            "dependencies": [],
+            "details": "Executar os comandos `npm install socket.io` e `npm install socket.io-client` no diretório do projeto para adicionar as dependências.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Criação do endpoint customizado em /pages/api/socket.ts",
+            "description": "Criar um endpoint de API dedicado para inicializar e expor o servidor Socket.IO dentro da arquitetura do Next.js.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Adicionar o arquivo `pages/api/socket.ts` e configurar a exportação padrão para lidar com as requisições HTTP e anexar o servidor Socket.IO ao servidor HTTP do Next.js.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implementação da lógica para evitar múltiplas instâncias no ambiente de desenvolvimento",
+            "description": "Garantir que o servidor Socket.IO não seja inicializado múltiplas vezes durante o hot reload do Next.js em desenvolvimento.",
+            "dependencies": [
+              "2.2"
+            ],
+            "details": "No arquivo do endpoint, verificar se já existe uma instância do Socket.IO anexada ao servidor global antes de criar uma nova, utilizando variáveis globais ou propriedades do objeto global.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Exposição dos eventos básicos (connection/disconnect)",
+            "description": "Configurar o servidor Socket.IO para emitir e escutar os eventos básicos de conexão e desconexão dos clientes.",
+            "dependencies": [
+              "2.3"
+            ],
+            "details": "No endpoint, adicionar listeners para os eventos 'connection' e 'disconnect', registrando logs ou executando lógica básica ao conectar/desconectar um socket.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Criação dos namespaces /admin e /game",
+            "description": "Organizar a comunicação em tempo real criando namespaces separados para administração e para o jogo.",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "No servidor Socket.IO, utilizar `io.of('/admin')` e `io.of('/game')` para criar e configurar os namespaces, adicionando listeners de conexão e lógica específica para cada canal.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Desenvolvimento das API Routes para CRUD de Participantes",
+        "description": "Criar os endpoints da API RESTful usando as API Routes do Next.js para gerenciar o ciclo de vida dos participantes (Criar, Ler, Atualizar, Excluir).",
+        "details": "Crie rotas de API em `/pages/api/participants/`. Implemente `GET /api/participants` para listar todos os participantes com status 'waiting'. Implemente `POST /api/participants` para criar um novo participante, incluindo validação de dados com Zod. Implemente `PUT /api/participants/[id]` para editar e `DELETE /api/participants/[id]` para remover. Use o Prisma Client para interagir com o banco de dados.",
+        "testStrategy": "Testar cada endpoint usando uma ferramenta de cliente API como Postman ou Insomnia. Verificar se os códigos de status HTTP (200, 201, 400, 404) estão corretos e se os dados são persistidos e retornados conforme esperado. Validar as regras de validação de entrada.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Criação da Estrutura de Rotas em /pages/api/participants",
+            "description": "Configurar a estrutura de diretórios e arquivos para as rotas de API RESTful dos participantes, seguindo o padrão de rotas do Next.js.",
+            "dependencies": [],
+            "details": "Crie a pasta `/pages/api/participants/` e os arquivos necessários para suportar os métodos GET, POST, PUT e DELETE, incluindo rotas dinâmicas para operações por ID.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implementação do Endpoint GET /api/participants",
+            "description": "Desenvolver o endpoint para listar todos os participantes com status 'waiting'.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Implemente a lógica para buscar no banco de dados, usando Prisma Client, todos os participantes cujo status seja 'waiting' e retorne-os em formato JSON.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implementação do Endpoint POST /api/participants com Validação Zod",
+            "description": "Criar o endpoint para cadastrar um novo participante, validando os dados de entrada com Zod.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Implemente a validação dos dados recebidos usando Zod. Caso os dados sejam válidos, crie o participante no banco via Prisma Client e retorne o participante criado com status HTTP 201.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implementação dos Endpoints PUT e DELETE /api/participants/[id]",
+            "description": "Desenvolver os endpoints para editar e remover participantes por ID.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Implemente o endpoint PUT para atualizar os dados de um participante específico e o endpoint DELETE para removê-lo do banco, ambos utilizando Prisma Client e tratamento adequado de erros.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Testes dos Endpoints com Postman/Insomnia",
+            "description": "Testar todos os endpoints criados utilizando uma ferramenta de cliente API para garantir o funcionamento correto.",
+            "dependencies": [
+              "3.2",
+              "3.3",
+              "3.4"
+            ],
+            "details": "Realize testes para cada rota, verificando os códigos de status HTTP, validação de dados, persistência e retorno das informações. Documente os resultados e ajuste os endpoints conforme necessário.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Construção da Interface do Totem de Cadastro",
+        "description": "Desenvolver a interface de usuário (UI) para o totem de cadastro, incluindo o formulário de registro (Nome, Cidade, Estado) e a funcionalidade de captura de selfie via webcam.",
+        "details": "Crie uma nova página em Next.js para o totem. Use componentes `shadcn/ui` (Input, Button, Card) para construir um formulário responsivo e touch-friendly. Integre a biblioteca `react-webcam` para a captura de imagem. Implemente a lógica para solicitar permissão da câmera e exibir o feed de vídeo. Ao tirar a foto, converta a imagem para Base64 ou Blob para o upload.",
+        "testStrategy": "Testar a interface em diferentes resoluções de tela para garantir a responsividade. Validar o formulário, garantindo que campos obrigatórios são exigidos. Testar o fluxo de permissão da câmera em navegadores modernos (Chrome, Firefox). Verificar se a selfie é capturada e exibida corretamente na tela.",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implementação do Upload de Imagem e Finalização do Cadastro",
+        "description": "Criar a lógica de backend para receber a imagem da selfie, salvá-la e associá-la ao novo participante no banco de dados. Implementar o fallback para upload de arquivo caso a webcam falhe.",
+        "details": "Crie uma API route (`/api/upload`) para lidar com o upload da imagem. Para o MVP, salve a imagem no sistema de arquivos local, numa pasta pública como `/public/uploads`, e armazene o caminho (`/uploads/filename.jpg`) no campo `photo_url` do participante. Implemente a lógica no frontend que, ao submeter o formulário, primeiro faz o upload da imagem, obtém a URL e então envia os dados do formulário junto com a URL para a API de criação de participante. Adicione um componente `<input type='file' />` como fallback.",
+        "testStrategy": "Realizar um cadastro completo pelo totem. Verificar se a imagem é salva na pasta correta no servidor. Confirmar se o registro do participante no banco de dados contém a URL correta da foto. Testar o fluxo de fallback de upload de arquivo.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Criação da API route /api/upload",
+            "description": "Desenvolver o endpoint backend para receber requisições de upload de imagem, utilizando método POST e middleware apropriado para processar arquivos multipart/form-data.",
+            "dependencies": [],
+            "details": "Implementar a rota /api/upload usando Express e Multer para aceitar arquivos enviados pelo frontend. Validar o tipo e tamanho do arquivo, retornando erro em caso de falha.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implementação da lógica de salvamento local da imagem",
+            "description": "Configurar o backend para salvar a imagem recebida no sistema de arquivos local, em uma pasta pública como /public/uploads.",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "Utilizar Multer para armazenar o arquivo na pasta /public/uploads, garantindo que o nome do arquivo seja único e acessível publicamente. Retornar o caminho relativo (/uploads/filename.jpg) na resposta da API.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Associação da URL da imagem ao participante no banco de dados",
+            "description": "Modificar o fluxo de cadastro para incluir o campo photo_url, associando o caminho da imagem ao registro do participante.",
+            "dependencies": [
+              "5.2"
+            ],
+            "details": "Ao receber a URL da imagem do backend, incluir esse valor no payload enviado para a API de criação de participante. Garantir que o campo photo_url seja persistido corretamente no banco.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implementação do fallback de upload por arquivo",
+            "description": "Adicionar ao frontend um componente <input type='file' /> para permitir upload manual caso a captura via webcam falhe.",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "No formulário de cadastro, incluir o input de arquivo e lógica para detectar falha da webcam, alternando para o upload manual. Garantir que ambos os fluxos utilizem a mesma API de upload.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Integração do frontend com o fluxo de upload e cadastro",
+            "description": "Implementar no frontend a lógica para enviar a imagem, obter a URL e submeter o cadastro do participante com a URL da foto.",
+            "dependencies": [
+              "5.2",
+              "5.3",
+              "5.4"
+            ],
+            "details": "No submit do formulário, realizar primeiro o upload da imagem, aguardar a resposta com a URL, e então enviar os dados do participante para a API de cadastro. Testar ambos os fluxos (webcam e arquivo).",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Desenvolvimento do Dashboard Administrativo para Gerenciamento da Fila",
+        "description": "Criar a interface do dashboard administrativo que exibe a lista de participantes na fila, permitindo ao administrador visualizar, editar, excluir e selecionar 3 jogadores para iniciar uma partida.",
+        "details": "Crie uma área protegida para o admin. Use `shadcn/ui` (Table, Dialog, Button) para exibir os dados dos participantes (foto, nome, cidade, estado). Implemente a busca de dados da API de participantes. Adicione checkboxes para selecionar exatamente 3 jogadores. O botão 'Iniciar Partida' deve ser habilitado apenas quando 3 jogadores estiverem selecionados. Use o Socket.IO para atualizar a lista em tempo real quando novos participantes se cadastrarem.",
+        "testStrategy": "Verificar se a lista de participantes é carregada e exibida corretamente. Testar as funcionalidades de edição e exclusão. Validar a lógica de seleção, garantindo que apenas 3 jogadores possam ser selecionados. Confirmar que a lista é atualizada em tempo real ao adicionar um novo participante pelo totem.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implementação da Área Protegida/Admin",
+            "description": "Criar a área de login/autenticação e garantir que apenas administradores autenticados possam acessar o dashboard.",
+            "dependencies": [],
+            "details": "Utilize middleware ou componentes de proteção de rota para restringir o acesso. Implemente tela de login simples, se necessário, e garanta o redirecionamento para o dashboard apenas após autenticação bem-sucedida.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Construção da Tabela de Participantes com shadcn/ui",
+            "description": "Desenvolver a tabela interativa utilizando os componentes Table, Dialog e Button do shadcn/ui para exibir os dados dos participantes.",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Inclua colunas para foto, nome, cidade e estado. Adicione botões para editar e excluir participantes, além de checkboxes para seleção. Garanta responsividade e acessibilidade.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Integração com a API de Participantes",
+            "description": "Conectar a tabela à API RESTful para buscar, editar e excluir participantes em tempo real.",
+            "dependencies": [
+              "6.2"
+            ],
+            "details": "Implemente chamadas GET, PUT e DELETE para a API de participantes. Atualize a tabela automaticamente após operações de CRUD. Utilize feedback visual para carregamento e erros.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implementação da Lógica de Seleção de Jogadores",
+            "description": "Adicionar checkboxes para seleção de jogadores e garantir que apenas 3 possam ser selecionados simultaneamente.",
+            "dependencies": [
+              "6.2"
+            ],
+            "details": "Desabilite checkboxes extras quando 3 jogadores estiverem selecionados. O botão 'Iniciar Partida' deve ser habilitado apenas quando exatamente 3 jogadores forem selecionados.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Integração com Socket.IO para Atualização em Tempo Real",
+            "description": "Conectar o dashboard ao Socket.IO para atualizar a lista de participantes automaticamente quando houver novos cadastros.",
+            "dependencies": [
+              "6.3"
+            ],
+            "details": "Implemente listeners para eventos de novos participantes e atualize a tabela sem recarregar a página. Garanta sincronização de estado entre múltiplos administradores.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Testes de Edição, Exclusão e Seleção de Participantes",
+            "description": "Testar todas as funcionalidades do dashboard, incluindo edição, exclusão, seleção de jogadores e atualização em tempo real.",
+            "dependencies": [
+              "6.3",
+              "6.4",
+              "6.5"
+            ],
+            "details": "Valide se a lista é carregada corretamente, se as operações de CRUD funcionam, se a lógica de seleção está correta e se a atualização via Socket.IO ocorre sem falhas.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implementação da Lógica de Jogo e Máquina de Estados no Backend",
+        "description": "Desenvolver a lógica central do jogo no servidor, incluindo a criação de uma nova partida, gerenciamento de rodadas, processamento de respostas e determinação do vencedor. Esta lógica será controlada por eventos do Socket.IO.",
+        "details": "No servidor Socket.IO, crie uma máquina de estados para o jogo (`waiting`, `active`, `finished`). Ao receber o evento 'start_game' do admin com os 3 IDs de participantes, crie uma nova entrada na tabela `Game` e `GameParticipant`. Emita um evento 'game_started' para os clientes relevantes (jogadores e tela pública). Crie uma função para buscar 8 perguntas aleatórias e avançar as rodadas com um temporizador (`setTimeout`).",
+        "testStrategy": "Criar testes unitários (usando Vitest ou Jest) para a máquina de estados do jogo. Simular o início de um jogo, o avanço de rodadas e o término. Usar um cliente Socket.IO de teste para emitir eventos 'start_game' e verificar se os eventos corretos ('game_started', 'new_round') são emitidos em resposta.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          6
+        ],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Definição dos Estados e Transições da Máquina de Estados",
+            "description": "Modelar os estados principais do jogo ('waiting', 'active', 'finished') e mapear todas as transições possíveis entre eles, considerando eventos como início do jogo, avanço de rodada e término.",
+            "dependencies": [],
+            "details": "Documentar os estados e criar um diagrama de transição. Definir as condições para cada mudança de estado e os eventos que disparam essas transições.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implementação do Evento 'start_game' e Criação das Entidades Game/GameParticipant",
+            "description": "Desenvolver o handler do evento 'start_game' no servidor, criando uma nova entrada na tabela Game e associando os participantes na tabela GameParticipant.",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Receber os IDs dos participantes, criar os registros no banco de dados e inicializar o estado do jogo para 'waiting'.\n<info added on 2025-09-26T22:11:58.424Z>\n✅ Implementação Concluída com Sucesso!\n\nO que foi implementado:\n1. Máquina de Estados Completa - Classe GameStateMachine criada com todos os estados e transições.\n2. Tipos TypeScript definidos para GameState, GameStatus, RoundStatus, etc.\n3. Servidor Socket.IO atualizado com lógica completa de jogo em socket-server-game.js.\n4. Integração com Prisma para criação automática de Game, GameParticipant e Round no banco de dados.\n5. Dashboard Admin atualizado com botão de iniciar jogo funcional e validação de 3 participantes.\n6. Eventos Socket.IO implementados: admin:game:start, game:started, game:ended, entre outros.\n\nFuncionalidades Implementadas:\n- Validação obrigatória de 3 participantes\n- Busca de 8 perguntas aleatórias do banco\n- Criação automática dos registros no banco de dados\n- Atualização do status dos participantes (waiting → playing → waiting)\n- Sistema de pontuação automático\n- Controle de rodadas com timer de 30 segundos\n- Finalização automática do jogo após 8 rodadas\n- Cálculo do vencedor baseado na pontuação\n\nTeste Realizado:\n- Servidor Socket.IO iniciado com sucesso\n- Dashboard admin conectado e funcional\n- Pronto para testar início de jogos reais\n</info added on 2025-09-26T22:11:58.424Z>",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Emissão dos Eventos Socket.IO para os Clientes",
+            "description": "Configurar o backend para emitir eventos como 'game_started', 'new_round' e 'game_finished' para os clientes relevantes (jogadores e tela pública) conforme o progresso do jogo.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Utilizar os canais e namespaces do Socket.IO para garantir que apenas os clientes corretos recebam os eventos. Validar a estrutura dos payloads enviados.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Seleção Aleatória de Perguntas para a Partida",
+            "description": "Implementar uma função que busca 8 perguntas aleatórias do banco de dados para cada nova partida iniciada.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Garantir que as perguntas não se repitam e estejam adequadas ao contexto do jogo. Associar as perguntas à partida criada.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Controle de Rodadas e Temporizador",
+            "description": "Desenvolver o mecanismo para avançar as rodadas do jogo automaticamente, utilizando temporizadores (setTimeout) e controlando o tempo de resposta dos jogadores.",
+            "dependencies": [
+              "7.3",
+              "7.4"
+            ],
+            "details": "Gerenciar o início e fim de cada rodada, disparando eventos e atualizando o estado do jogo conforme o tempo expira.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Testes Unitários da Máquina de Estados",
+            "description": "Criar testes automatizados para validar as transições de estados, eventos e integridade da lógica central do jogo.",
+            "dependencies": [
+              "7.1",
+              "7.5"
+            ],
+            "details": "Utilizar frameworks como Vitest ou Jest para simular cenários de jogo, verificando se os estados e eventos estão corretos.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Simulação de Partidas para Validação",
+            "description": "Executar partidas simuladas no ambiente de desenvolvimento para validar o fluxo completo do jogo, desde o início até a finalização.",
+            "dependencies": [
+              "7.6"
+            ],
+            "details": "Utilizar clientes de teste Socket.IO para emitir eventos e monitorar as respostas do backend, garantindo que todos os requisitos funcionais estejam atendidos.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Construção da Interface de Jogo para os Participantes",
+        "description": "Desenvolver a tela que os 3 jogadores verão durante a partida, mostrando a pergunta atual, as alternativas (A, B, C), e permitindo que eles enviem suas respostas.",
+        "details": "Crie uma página de jogo dinâmica (`/game/[gameId]`). O cliente Socket.IO nesta página deve ouvir por eventos como 'new_question' e 'round_result'. Ao receber uma nova pergunta, exiba o texto e as três alternativas clicáveis. Ao clicar em uma resposta, emita um evento 'submit_answer' para o servidor com o ID do jogo, ID do participante, a resposta e um timestamp local.",
+        "testStrategy": "Abrir 3 janelas de navegador na página do jogo. Iniciar um jogo pelo dashboard administrativo. Verificar se as 3 janelas recebem a mesma pergunta simultaneamente. Clicar em respostas em cada janela e verificar no console do servidor se os eventos 'submit_answer' são recebidos corretamente.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implementação da Lógica de Pontuação e Processamento de Respostas",
+        "description": "No backend, desenvolver a lógica para receber as respostas dos jogadores, validar se estão corretas, calcular a pontuação com base no tempo de resposta e acerto, e armazenar os resultados.",
+        "details": "No listener do evento 'submit_answer' do servidor, compare a resposta do jogador com a resposta correta da pergunta. Calcule a pontuação (ex: 1000 pontos - (tempo_de_resposta_ms / 10)). Armazene a resposta na tabela `Answer` e atualize o `score` na tabela `GameParticipant`. Após o tempo da rodada expirar, emita um evento 'round_result' para todos os clientes com a pontuação de cada jogador na rodada.",
+        "testStrategy": "Testar a lógica de pontuação com testes unitários, passando diferentes tempos de resposta e verificando se a pontuação é calculada corretamente. Em um cenário de jogo real, enviar respostas (corretas e incorretas) de diferentes jogadores e verificar se o evento 'round_result' contém os dados de pontuação atualizados e corretos.",
+        "priority": "high",
+        "dependencies": [
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implementação do Listener submit_answer",
+            "description": "Criar o listener do evento 'submit_answer' no servidor para receber as respostas dos jogadores em tempo real.",
+            "dependencies": [],
+            "details": "No backend, registre o evento 'submit_answer' no servidor Socket.IO, garantindo que os dados recebidos incluam o identificador do jogador, a resposta enviada, o tempo de resposta e o identificador da pergunta.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Validação da Resposta e Cálculo da Pontuação",
+            "description": "Comparar a resposta do jogador com a resposta correta e calcular a pontuação baseada no tempo de resposta e acerto.",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Implemente a lógica para validar se a resposta está correta. Calcule a pontuação conforme a fórmula definida (ex: 1000 pontos - (tempo_de_resposta_ms / 10)), atribuindo zero pontos para respostas incorretas.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Persistência dos Dados na Tabela Answer",
+            "description": "Armazenar cada resposta recebida na tabela 'Answer' do banco de dados.",
+            "dependencies": [
+              "9.2"
+            ],
+            "details": "Crie a lógica para inserir um novo registro na tabela 'Answer' contendo o jogador, a pergunta, a resposta enviada, o tempo de resposta, se acertou e a pontuação obtida.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Atualização do Score em GameParticipant",
+            "description": "Atualizar o campo 'score' do participante na tabela 'GameParticipant' com a nova pontuação.",
+            "dependencies": [
+              "9.3"
+            ],
+            "details": "Implemente a atualização atômica do score do participante, somando a pontuação obtida na rodada ao valor já existente.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Emissão do Evento round_result",
+            "description": "Emitir o evento 'round_result' para todos os clientes ao final da rodada, contendo a pontuação de cada jogador.",
+            "dependencies": [
+              "9.4"
+            ],
+            "details": "Ao expirar o tempo da rodada, agregue as pontuações dos jogadores e envie o evento 'round_result' via Socket.IO para todos os clientes conectados à partida.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Testes Unitários e de Integração",
+            "description": "Desenvolver testes para garantir a precisão da lógica de pontuação, persistência e comunicação em tempo real.",
+            "dependencies": [
+              "9.5"
+            ],
+            "details": "Implemente testes unitários para a validação de respostas e cálculo de pontuação, e testes de integração simulando múltiplos jogadores enviando respostas e recebendo o evento 'round_result'.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Desenvolvimento da Tela de Exibição Pública",
+        "description": "Criar a interface para a tela pública que exibe o estado atual do jogo em tempo real, incluindo perguntas, respostas, pontuações e a celebração do vencedor.",
+        "details": "Crie uma página dedicada (`/display`). Esta página se conectará ao Socket.IO e ouvirá todos os eventos de estado do jogo ('game_started', 'new_question', 'round_result', 'game_finished'). Projete a interface para ser visualmente impactante e legível à distância. Implemente o modo 'idle' que, por padrão, exibe um ranking dos melhores jogadores de partidas anteriores. Use CSS para animações simples de transição.",
+        "testStrategy": "Manter a tela de exibição pública aberta enquanto um jogo está em andamento. Verificar se a tela se sincroniza corretamente com as ações do jogo: exibe a pergunta correta, mostra os resultados da rodada quando disponíveis e exibe a tela de vencedor no final. Testar se a tela retorna ao modo 'idle' após o término do jogo.",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Finalização do Fluxo de Jogo e Declaração do Vencedor",
+        "description": "Implementar a lógica para concluir o jogo após 8 rodadas, determinar o vencedor com base na pontuação mais alta e atualizar o status do jogo e dos participantes.",
+        "details": "No backend, após a 8ª rodada, a máquina de estados do jogo deve identificar o participante com o maior `score` na tabela `GameParticipant`. Atualize o campo `winner_id` e o `status` para 'finished' na tabela `Game`. Altere o status dos participantes para 'finished'. Emita um evento 'game_finished' contendo os dados do vencedor e a pontuação final de todos os jogadores.",
+        "testStrategy": "Executar um jogo completo do início ao fim. Verificar se após a 8ª rodada o jogo é finalizado automaticamente. Confirmar se o evento 'game_finished' é enviado para todos os clientes. Inspecionar o banco de dados para garantir que o `Game` e os `Participants` foram atualizados com o status 'finished' e o `winner_id` correto.",
+        "priority": "medium",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Estilização Final, Animações e Polimento Geral",
+        "description": "Aplicar o tema visual 'dark brutalist básico' em todas as interfaces (totem, dashboard, jogo, tela pública), adicionar animações de celebração para o vencedor e realizar um polimento geral de usabilidade e performance.",
+        "details": "Use o Tailwind CSS, configurado pelo `shadcn/ui`, para aplicar um tema escuro consistente, com fontes de alto contraste e bordas nítidas. Crie animações de celebração para o vencedor na tela pública usando CSS keyframes ou uma biblioteca leve como `framer-motion`. Revise todos os fluxos de usuário para garantir que o feedback visual seja imediato e a experiência seja fluida, conforme os critérios de qualidade do MVP.",
+        "testStrategy": "Realizar testes de usabilidade com usuários-alvo, coletando feedback sobre a clareza e apelo visual da interface. Auditar a performance da aplicação usando o Lighthouse no Chrome DevTools, focando em métricas como LCP e TBT. Validar a consistência visual em todas as telas e em diferentes dispositivos.",
+        "priority": "low",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-26T21:18:33.011Z",
+      "updated": "2025-09-26T22:11:42.777Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

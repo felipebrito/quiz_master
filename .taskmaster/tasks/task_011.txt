@@ -1,0 +1,11 @@
+# Task ID: 11
+# Title: Finalização do Fluxo de Jogo e Declaração do Vencedor
+# Status: pending
+# Dependencies: 10
+# Priority: medium
+# Description: Implementar a lógica para concluir o jogo após 8 rodadas, determinar o vencedor com base na pontuação mais alta e atualizar o status do jogo e dos participantes.
+# Details:
+No backend, após a 8ª rodada, a máquina de estados do jogo deve identificar o participante com o maior `score` na tabela `GameParticipant`. Atualize o campo `winner_id` e o `status` para 'finished' na tabela `Game`. Altere o status dos participantes para 'finished'. Emita um evento 'game_finished' contendo os dados do vencedor e a pontuação final de todos os jogadores.
+
+# Test Strategy:
+Executar um jogo completo do início ao fim. Verificar se após a 8ª rodada o jogo é finalizado automaticamente. Confirmar se o evento 'game_finished' é enviado para todos os clientes. Inspecionar o banco de dados para garantir que o `Game` e os `Participants` foram atualizados com o status 'finished' e o `winner_id` correto.

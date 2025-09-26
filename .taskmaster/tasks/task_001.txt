@@ -1,0 +1,49 @@
+# Task ID: 1
+# Title: Configuração da Fundação do Projeto e Banco de Dados
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Inicializar o projeto Next.js 14+ com TypeScript, configurar o Prisma ORM com um banco de dados SQLite e definir os esquemas de dados iniciais. Isso inclui a criação dos modelos para Participante, Jogo, Pergunta, etc., e o seeding do banco de dados com as 24 perguntas hardcoded.
+# Details:
+Use `npx create-next-app@latest --ts` para criar o projeto. Instale o Prisma: `npm install prisma --save-dev` e `npx prisma init --datasource-provider sqlite`. Defina os modelos no arquivo `prisma/schema.prisma` conforme especificado no PRD. Crie um script de seed (`prisma/seed.ts`) para popular a tabela `Question` com as 24 perguntas. Adicione o comando de seed ao `package.json`. Configure `shadcn/ui` com `npx shadcn-ui@latest init` para o sistema de componentes base.
+
+# Test Strategy:
+Verificar se o projeto é compilado sem erros. Executar `npx prisma migrate dev` para criar as tabelas no banco de dados SQLite. Executar o script de seed e confirmar se as 24 perguntas foram inseridas corretamente na base de dados usando o Prisma Studio (`npx prisma studio`).
+
+# Subtasks:
+## 1. Criação do Projeto Next.js com TypeScript [pending]
+### Dependencies: None
+### Description: Inicializar um novo projeto Next.js 14+ utilizando TypeScript, garantindo que todas as dependências e configurações iniciais estejam corretas.
+### Details:
+Executar o comando `npx create-next-app@latest --ts` para criar o projeto. Verificar se o arquivo `tsconfig.json` foi gerado e se o projeto compila sem erros.
+
+## 2. Instalação e Configuração Inicial do Prisma com SQLite [pending]
+### Dependencies: 1.1
+### Description: Instalar o Prisma como dependência de desenvolvimento e inicializar a configuração do ORM com SQLite como banco de dados.
+### Details:
+Executar `npm install prisma --save-dev` e `npx prisma init --datasource-provider sqlite`. Verificar se os arquivos `prisma/schema.prisma` e `.env` foram criados corretamente.
+
+## 3. Definição dos Modelos no schema.prisma [pending]
+### Dependencies: 1.2
+### Description: Modelar as entidades principais (Participante, Jogo, Pergunta, etc.) no arquivo `prisma/schema.prisma` conforme especificado no PRD.
+### Details:
+Editar o arquivo `prisma/schema.prisma` para definir os modelos e suas relações. Validar a sintaxe e rodar `npx prisma migrate dev` para criar as tabelas no banco de dados.
+
+## 4. Implementação do Script de Seed com as 24 Perguntas [pending]
+### Dependencies: 1.3
+### Description: Criar um script de seed (`prisma/seed.ts`) para popular a tabela `Question` com as 24 perguntas hardcoded.
+### Details:
+Desenvolver o script de seed utilizando o Prisma Client. Garantir que as perguntas sejam inseridas corretamente e que o script possa ser executado sem erros.
+
+## 5. Configuração do Comando de Seed no package.json [pending]
+### Dependencies: 1.4
+### Description: Adicionar o comando de seed ao arquivo `package.json` para facilitar a execução do script de seed.
+### Details:
+Editar o `package.json` para incluir um script, por exemplo, `"seed": "ts-node prisma/seed.ts"`. Testar a execução do comando para garantir que o seed é realizado corretamente.
+
+## 6. Inicialização do shadcn/ui para Sistema de Componentes Base [pending]
+### Dependencies: 1.1
+### Description: Configurar o sistema de componentes base utilizando o shadcn/ui, preparando o projeto para o desenvolvimento das interfaces.
+### Details:
+Executar `npx shadcn-ui@latest init` para inicializar o shadcn/ui. Verificar se os componentes e configurações iniciais foram adicionados corretamente ao projeto.
+

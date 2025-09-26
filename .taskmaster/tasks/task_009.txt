@@ -1,0 +1,49 @@
+# Task ID: 9
+# Title: Implementação da Lógica de Pontuação e Processamento de Respostas
+# Status: pending
+# Dependencies: 7, 8
+# Priority: high
+# Description: No backend, desenvolver a lógica para receber as respostas dos jogadores, validar se estão corretas, calcular a pontuação com base no tempo de resposta e acerto, e armazenar os resultados.
+# Details:
+No listener do evento 'submit_answer' do servidor, compare a resposta do jogador com a resposta correta da pergunta. Calcule a pontuação (ex: 1000 pontos - (tempo_de_resposta_ms / 10)). Armazene a resposta na tabela `Answer` e atualize o `score` na tabela `GameParticipant`. Após o tempo da rodada expirar, emita um evento 'round_result' para todos os clientes com a pontuação de cada jogador na rodada.
+
+# Test Strategy:
+Testar a lógica de pontuação com testes unitários, passando diferentes tempos de resposta e verificando se a pontuação é calculada corretamente. Em um cenário de jogo real, enviar respostas (corretas e incorretas) de diferentes jogadores e verificar se o evento 'round_result' contém os dados de pontuação atualizados e corretos.
+
+# Subtasks:
+## 1. Implementação do Listener submit_answer [pending]
+### Dependencies: None
+### Description: Criar o listener do evento 'submit_answer' no servidor para receber as respostas dos jogadores em tempo real.
+### Details:
+No backend, registre o evento 'submit_answer' no servidor Socket.IO, garantindo que os dados recebidos incluam o identificador do jogador, a resposta enviada, o tempo de resposta e o identificador da pergunta.
+
+## 2. Validação da Resposta e Cálculo da Pontuação [pending]
+### Dependencies: 9.1
+### Description: Comparar a resposta do jogador com a resposta correta e calcular a pontuação baseada no tempo de resposta e acerto.
+### Details:
+Implemente a lógica para validar se a resposta está correta. Calcule a pontuação conforme a fórmula definida (ex: 1000 pontos - (tempo_de_resposta_ms / 10)), atribuindo zero pontos para respostas incorretas.
+
+## 3. Persistência dos Dados na Tabela Answer [pending]
+### Dependencies: 9.2
+### Description: Armazenar cada resposta recebida na tabela 'Answer' do banco de dados.
+### Details:
+Crie a lógica para inserir um novo registro na tabela 'Answer' contendo o jogador, a pergunta, a resposta enviada, o tempo de resposta, se acertou e a pontuação obtida.
+
+## 4. Atualização do Score em GameParticipant [pending]
+### Dependencies: 9.3
+### Description: Atualizar o campo 'score' do participante na tabela 'GameParticipant' com a nova pontuação.
+### Details:
+Implemente a atualização atômica do score do participante, somando a pontuação obtida na rodada ao valor já existente.
+
+## 5. Emissão do Evento round_result [pending]
+### Dependencies: 9.4
+### Description: Emitir o evento 'round_result' para todos os clientes ao final da rodada, contendo a pontuação de cada jogador.
+### Details:
+Ao expirar o tempo da rodada, agregue as pontuações dos jogadores e envie o evento 'round_result' via Socket.IO para todos os clientes conectados à partida.
+
+## 6. Testes Unitários e de Integração [pending]
+### Dependencies: 9.5
+### Description: Desenvolver testes para garantir a precisão da lógica de pontuação, persistência e comunicação em tempo real.
+### Details:
+Implemente testes unitários para a validação de respostas e cálculo de pontuação, e testes de integração simulando múltiplos jogadores enviando respostas e recebendo o evento 'round_result'.
+

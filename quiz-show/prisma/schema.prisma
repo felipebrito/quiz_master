@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  name      String
+  city      String
+  state     String
+  photo_url String?
+  status    String   @default("waiting") // waiting, playing, finished
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  game_participants GameParticipant[]
+  answers          Answer[]
+
+  @@map("participants")
+}
+
+model Game {
+  id            String    @id @default(cuid())
+  status        String    @default("waiting") // waiting, active, finished
+  current_round Int       @default(0)
+  started_at    DateTime?
+  ended_at      DateTime?
+  winner_id     String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relations
+  participants GameParticipant[]
+  answers      Answer[]
+
+  @@map("games")
+}
+
+model GameParticipant {
+  id            String @id @default(cuid())
+  game_id       String
+  participant_id String
+  position      Int
+  score         Int    @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  game       Game       @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@unique([game_id, participant_id])
+  @@map("game_participants")
+}
+
+model Question {
+  id             String @id @default(cuid())
+  text           String
+  option_a       String
+  option_b       String
+  option_c       String
+  correct_answer String // 'A', 'B', or 'C'
+  difficulty     String @default("medium") // easy, medium, hard
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relations
+  answers Answer[]
+
+  @@map("questions")
+}
+
+model Answer {
+  id            String @id @default(cuid())
+  game_id       String
+  participant_id String
+  question_id   String
+  answer        String // 'A', 'B', or 'C'
+  response_time Int    // in milliseconds
+  is_correct    Boolean
+  created_at    DateTime @default(now())
+
+  // Relations
+  game       Game       @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+  question   Question   @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@unique([game_id, participant_id, question_id])
+  @@map("answers")
+}
