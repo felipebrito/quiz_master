@@ -173,18 +173,18 @@ export default function DisplayPage() {
 
   const loadLeaderboard = async () => {
     try {
-      const response = await fetch('/api/participants')
-      const participants = await response.json()
+      const response = await fetch('/api/ranking')
+      const data = await response.json()
       
-      // Sort by score and take top 10
-      const sorted = participants
-        .filter((p: any) => p.score > 0)
-        .sort((a: any, b: any) => b.score - a.score)
-        .slice(0, 10)
-      
-      setLeaderboard(sorted)
+      if (data.success) {
+        setLeaderboard(data.data)
+      } else {
+        console.error('Erro ao carregar ranking:', data.error)
+        setLeaderboard([])
+      }
     } catch (error) {
       console.error('Erro ao carregar leaderboard:', error)
+      setLeaderboard([])
     }
   }
 
