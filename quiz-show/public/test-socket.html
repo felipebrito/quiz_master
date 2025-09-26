@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket.IO Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="logs"></div>
+
+    <script>
+        const socket = io('http://localhost:3001');
+        
+        socket.on('connect', () => {
+            document.getElementById('status').innerHTML = '✅ Connected to Socket.IO';
+            document.getElementById('status').style.color = 'green';
+            addLog('Connected to Socket.IO server');
+        });
+
+        socket.on('disconnect', (reason) => {
+            document.getElementById('status').innerHTML = '❌ Disconnected: ' + reason;
+            document.getElementById('status').style.color = 'red';
+            addLog('Disconnected: ' + reason);
+        });
+
+        socket.on('timer:update', (data) => {
+            addLog('Timer update: ' + JSON.stringify(data));
+        });
+
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            logs.appendChild(div);
+        }
+
+        // Test ping
+        setTimeout(() => {
+            socket.emit('ping');
+            addLog('Sent ping');
+        }, 2000);
+    </script>
+</body>
+</html>

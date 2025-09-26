@@ -87,16 +87,15 @@ async function startGame(participantIds) {
     }
 
     // Get 8 random questions
-    const questions = await prisma.question.findMany({
-      take: 8,
-      orderBy: {
-        id: 'asc' // Simple random for now, could be improved
-      }
-    })
-
-    if (questions.length < 8) {
+    const allQuestions = await prisma.question.findMany()
+    
+    if (allQuestions.length < 8) {
       throw new Error('Not enough questions in database')
     }
+    
+    // Shuffle and take 8 random questions
+    const shuffledQuestions = allQuestions.sort(() => 0.5 - Math.random())
+    const questions = shuffledQuestions.slice(0, 8)
 
     // Create game
     const game = await prisma.game.create({

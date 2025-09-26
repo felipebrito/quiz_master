@@ -9,10 +9,13 @@ export const useSocket = () => {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
+    console.log('🔧 useSocket: Initializing socket connection...')
     const socketInstance = getSocket()
     setSocket(socketInstance)
 
     if (socketInstance) {
+      console.log('🔧 useSocket: Socket instance created, setting up listeners...')
+      
       socketInstance.on('connect', () => {
         console.log('🔌 Connected to Socket.IO server')
         setIsConnected(true)
@@ -26,6 +29,14 @@ export const useSocket = () => {
       socketInstance.on('pong', (data) => {
         console.log('🏓 Received pong:', data)
       })
+
+      // Test connection immediately
+      setTimeout(() => {
+        console.log('🔧 useSocket: Testing connection...')
+        socketInstance.emit('ping')
+      }, 1000)
+    } else {
+      console.log('❌ useSocket: Failed to create socket instance')
     }
 
     return () => {
