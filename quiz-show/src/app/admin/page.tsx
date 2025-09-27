@@ -35,6 +35,7 @@ export default function AdminPage() {
     state: '',
     photo: ''
   });
+  const [gameStarted, setGameStarted] = useState(false);
 
   const { states, cities, loading: loadingLocations, loadCities } = useStatesCities();
 
@@ -131,6 +132,17 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartGame = () => {
+    if (selectedPlayers.length !== 3) {
+      alert('Selecione exatamente 3 jogadores para iniciar a partida');
+      return;
+    }
+    
+    // Aqui você implementaria a lógica para iniciar o jogo
+    // Por enquanto, vamos apenas navegar para a página de administração do jogo
+    window.location.href = '/admin/game';
   };
 
   const fetchParticipants = useCallback(async () => {
