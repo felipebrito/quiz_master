@@ -255,6 +255,124 @@ O MVP deve incluir um conjunto de 24 perguntas (3 conjuntos de 8 para variação
 - **Confiabilidade**: Taxa de sucesso de webcam > 95%
 - **Satisfação**: Feedback positivo de usuários de teste
 
+## 13. Sistema de Relatórios e Analytics (CRÍTICO)
+### 13.1 Dashboard de Analytics Administrativo
+- **Visão Geral Executiva:**
+  - Total de partidas realizadas (período selecionável)
+  - Número total de participantes únicos
+  - Taxa de participação média por partida
+  - Tempo médio de duração das partidas
+  - Receita gerada (se aplicável)
+
+- **Métricas de Performance:**
+  - Taxa de conclusão de partidas (partidas iniciadas vs finalizadas)
+  - Tempo médio de resposta por pergunta
+  - Distribuição de dificuldade das perguntas respondidas
+  - Taxa de acerto geral do sistema
+  - Participantes mais ativos (ranking por frequência)
+
+### 13.2 Análise de Partidas Detalhada
+- **Relatório por Partida:**
+  - ID da partida, data/hora, duração total
+  - Lista completa de participantes com fotos
+  - Perguntas utilizadas e respostas corretas
+  - Respostas de cada participante por pergunta
+  - Tempo de resposta individual por pergunta
+  - Pontuação final e ranking da partida
+  - Gráficos de evolução de pontuação durante a partida
+
+- **Análise de Perguntas:**
+  - Perguntas mais difíceis (menor taxa de acerto)
+  - Perguntas mais fáceis (maior taxa de acerto)
+  - Tempo médio de resposta por pergunta
+  - Distribuição de respostas (A, B, C) por pergunta
+  - Perguntas que geraram mais confusão
+
+### 13.3 Perfil de Participantes
+- **Histórico Individual:**
+  - Total de partidas jogadas
+  - Pontuação média, máxima e mínima
+  - Taxa de acerto geral e por categoria
+  - Tempo médio de resposta
+  - Evolução de performance ao longo do tempo
+  - Categorias de conhecimento mais fortes/fracas
+
+- **Comparativo de Performance:**
+  - Ranking de participantes por diferentes métricas
+  - Comparação entre grupos (idade, localização, etc.)
+  - Identificação de padrões de comportamento
+  - Participantes com maior potencial de melhoria
+
+### 13.4 Análise de Conteúdo
+- **Base de Perguntas:**
+  - Distribuição por categoria e dificuldade
+  - Perguntas mais utilizadas vs menos utilizadas
+  - Taxa de acerto por categoria de pergunta
+  - Identificação de perguntas problemáticas
+  - Sugestões de otimização do banco de perguntas
+
+- **Padrões de Resposta:**
+  - Análise de "viés de resposta" (tendência a escolher A, B ou C)
+  - Correlação entre tempo de resposta e acerto
+  - Identificação de "pegadinhas" efetivas
+  - Padrões de comportamento por demografia
+
+### 13.5 Relatórios Operacionais
+- **Performance do Sistema:**
+  - Uptime e disponibilidade
+  - Tempo de resposta do sistema
+  - Erros e falhas registradas
+  - Uso de recursos (CPU, memória, banco)
+  - Logs de atividades suspeitas
+
+- **Engajamento:**
+  - Horários de maior atividade
+  - Dias da semana com mais participação
+  - Sazonalidade de uso
+  - Taxa de retenção de participantes
+  - Fatores que influenciam o engajamento
+
+### 13.6 Relatórios Exportáveis
+- **Formatos Suportados:**
+  - PDF para apresentações executivas
+  - Excel/CSV para análise detalhada
+  - JSON para integração com outros sistemas
+  - Gráficos interativos (Chart.js/D3.js)
+
+- **Agendamento:**
+  - Relatórios automáticos por email
+  - Relatórios semanais/mensais automáticos
+  - Alertas para métricas críticas
+  - Dashboard em tempo real
+
+### 13.7 KPIs Críticos para Monitoramento
+- **Métricas de Negócio:**
+  - NPS (Net Promoter Score) dos participantes
+  - Taxa de retenção de participantes
+  - Frequência de uso por participante
+  - Tempo médio de sessão
+  - Taxa de conversão (se aplicável)
+
+- **Métricas de Qualidade:**
+  - Precisão das perguntas (validação de respostas corretas)
+  - Consistência da dificuldade
+  - Qualidade da experiência do usuário
+  - Tempo de resolução de problemas técnicos
+
+### 13.8 Alertas e Notificações Inteligentes
+- **Alertas Automáticos:**
+  - Queda significativa na taxa de participação
+  - Aumento anômalo no tempo de resposta
+  - Erros técnicos críticos
+  - Participantes com comportamento suspeito
+  - Perguntas com taxa de acerto muito baixa/alta
+
+- **Insights Automáticos:**
+  - Identificação de tendências emergentes
+  - Sugestões de otimização baseadas em dados
+  - Detecção de padrões anômalos
+  - Recomendações de conteúdo
+
 ## Próximos Passos Pós-MVP
 - Integração com APIs externas de perguntas
 - Sistema de estatísticas detalhadas
