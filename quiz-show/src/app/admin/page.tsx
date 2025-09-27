@@ -199,14 +199,6 @@ export default function AdminPage() {
 
   const canStartGame = selectedPlayers.length === 3;
 
-  const handleStartGame = () => {
-    if (canStartGame) {
-      console.log('Iniciando jogo com jogadores:', selectedPlayers);
-      // Aqui você implementaria a lógica para iniciar o jogo
-      alert(`Jogo iniciado com ${selectedPlayers.length} jogadores!`);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
