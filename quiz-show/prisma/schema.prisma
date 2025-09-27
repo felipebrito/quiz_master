@@ -41,6 +41,7 @@ model Game {
   // Relations
   participants GameParticipant[]
   answers      Answer[]
+  rounds       Round[]
 
   @@map("games")
 }
@@ -75,6 +76,7 @@ model Question {
 
   // Relations
   answers Answer[]
+  rounds  Round[]
 
   @@map("questions")
 }
@@ -96,4 +98,20 @@ model Answer {
 
   @@unique([game_id, participant_id, question_id])
   @@map("answers")
+}
+
+model Round {
+  id           String   @id @default(cuid())
+  game_id      String
+  question_id  String
+  round_number Int
+  start_time   DateTime @default(now())
+  end_time     DateTime?
+
+  // Relations
+  game     Game     @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@unique([game_id, round_number])
+  @@map("rounds")
 }

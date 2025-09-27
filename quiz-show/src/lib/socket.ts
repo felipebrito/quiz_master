@@ -39,10 +39,6 @@ export const disconnectAllSockets = () => {
     adminSocket.disconnect()
     adminSocket = null
   }
-  if (gameSocket) {
-    gameSocket.disconnect()
-    gameSocket = null
-  }
 }
 
 // Socket event types for TypeScript

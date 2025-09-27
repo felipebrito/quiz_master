@@ -323,7 +323,11 @@ export default function DisplayPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {gameState.question.options.map((option, index) => (
+                {[
+                  gameState.question.optionA,
+                  gameState.question.optionB,
+                  gameState.question.optionC
+                ].map((option, index) => (
                   <div key={index} className="bg-white/10 rounded-lg p-6 text-center">
                     <div className="text-4xl font-bold text-blue-400 mb-2">
                       {String.fromCharCode(65 + index)}

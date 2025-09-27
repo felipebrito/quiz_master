@@ -74,65 +74,57 @@ async function startGame(participantIds) {
       throw new Error('Exactly 3 participants required')
     }
 
-    // Get participants from database
-    const participants = await prisma.participant.findMany({
-      where: {
-        id: { in: participantIds },
-        status: 'waiting'
+    const result = await prisma.$transaction(async tx => {
+      // Get participants
+      const participants = await tx.participant.findMany({
+        where: {
+          id: { in: participantIds },
+          status: 'waiting'
+        }
+      })
+
+      if (participants.length !== 3) {
+        throw new Error('Some participants not found or not available')
       }
+
+      // Get 8 random questions
+      const allQuestions = await tx.question.findMany()
+      
+      if (allQuestions.length < 8) {
+        throw new Error('Not enough questions in database')
+      }
+      
+      // Shuffle and take 8 random questions
+      const shuffledQuestions = allQuestions.sort(() => 0.5 - Math.random())
+      const questions = shuffledQuestions.slice(0, 8)
+
+      // Create game
+      const game = await tx.game.create({
+        data: {
+          status: 'active',
+          current_round: 0,
+          started_at: new Date()
+        }
+      })
+
+      // Create game participants
+      await Promise.all(
+        participants.map((participant, index) =>
+          tx.gameParticipant.create({
+            data: {
+              game_id: game.id,
+              participant_id: participant.id,
+              score: 0,
+              position: index + 1
+            }
+          })
+        )
+      )
+
+      return { game, participants, questions }
     })
 
-    if (participants.length !== 3) {
-      throw new Error('Some participants not found or not available')
-    }
-
-    // Get 8 random questions
-    const allQuestions = await prisma.question.findMany()
-    
-    if (allQuestions.length < 8) {
-      throw new Error('Not enough questions in database')
-    }
-    
-    // Shuffle and take 8 random questions
-    const shuffledQuestions = allQuestions.sort(() => 0.5 - Math.random())
-    const questions = shuffledQuestions.slice(0, 8)
-
-    // Create game
-    const game = await prisma.game.create({
-      data: {
-        status: 'active',
-        current_round: 0,
-        started_at: new Date()
-      }
-    })
-
-    // Create game participants
-    const gameParticipants = await Promise.all(
-      participants.map(participant =>
-        prisma.gameParticipant.create({
-          data: {
-            game_id: game.id,
-            participant_id: participant.id,
-            score: 0,
-            joined_at: new Date()
-          }
-        })
-      )
-    )
-
-    // Create rounds
-    const rounds = await Promise.all(
-      questions.map((question, index) =>
-        prisma.round.create({
-          data: {
-            game_id: game.id,
-            question_id: question.id,
-            round_number: index + 1,
-            start_time: new Date()
-          }
-        })
-      )
-    )
+    const { game, participants, questions } = result
 
     // Update game state
     gameState.gameId = game.id
@@ -218,11 +210,24 @@ async function endRound(gameId, question) {
     // Stop timer
     stopTimer()
 
+    // Get current scores
+    const gameParticipants = await prisma.gameParticipant.findMany({
+      where: { game_id: gameId },
+      include: { participant: true }
+    })
+
+    const currentScores = gameParticipants.map(gp => ({
+      id: gp.participant.id,
+      name: gp.participant.name,
+      score: gp.score
+    }))
+
     // Emit round ended event
     io.emit('round:ended', {
       gameId,
       correctAnswer: question.correct_answer,
-      explanation: `Resposta correta: ${question.correct_answer}`
+      explanation: `Resposta correta: ${question.correct_answer}`,
+      currentScores: currentScores
     })
 
     // Check if there are more rounds
