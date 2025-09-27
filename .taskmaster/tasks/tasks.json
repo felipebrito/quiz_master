@@ -194,7 +194,7 @@
             "description": "Organizar a estrutura de diretórios do projeto Next.js 14+ para separar claramente o ambiente administrativo, incluindo dashboards e relatórios exportáveis.",
             "dependencies": [],
             "details": "Criar diretórios dedicados em 'app' para dashboards, relatórios e componentes administrativos. Implementar layouts específicos para o ambiente administrativo, garantindo isolamento visual e funcional.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verificar navegação entre páginas administrativas, garantir que componentes e rotas estejam isolados do ambiente público."
           },
           {
@@ -492,7 +492,7 @@
     ],
     "metadata": {
       "created": "2025-09-26T21:18:33.011Z",
-      "updated": "2025-09-27T13:56:57.784Z",
+      "updated": "2025-09-27T14:09:08.172Z",
       "description": "Tasks for master context"
     }
   }

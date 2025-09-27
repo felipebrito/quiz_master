@@ -83,6 +83,26 @@ export default function RankingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+      {/* Navegação */}
+      <nav className="mb-8">
+        <div className="flex justify-between items-center">
+          <Link href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+            ← Voltar ao Início
+          </Link>
+          <div className="flex gap-4">
+            <Link href="/cadastro" className="text-gray-300 hover:text-white transition-colors">
+              Cadastro
+            </Link>
+            <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+              Admin
+            </Link>
+            <Link href="/display" className="text-gray-300 hover:text-white transition-colors">
+              Display
+            </Link>
+          </div>
+        </div>
+      </nav>
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

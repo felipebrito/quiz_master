@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+            color: white;
+            font-family: system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .test-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .title {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        Teste de CSS - <span class="gradient-text">Quiz Show</span>
+    </div>
+    
+    <div class="test-card">
+        <h2>✅ Teste 1: CSS Inline Funcionando</h2>
+        <p>Se você vê este card com fundo semi-transparente e blur, o CSS está funcionando.</p>
+    </div>
+    
+    <div class="test-card">
+        <h2>🎯 Informações Técnicas</h2>
+        <p><strong>Página:</strong> Teste de CSS independente</p>
+        <p><strong>Estilo:</strong> CSS inline (não Tailwind)</p>
+        <p><strong>Objetivo:</strong> Verificar se o problema é específico do Tailwind</p>
+    </div>
+    
+    <div class="test-card">
+        <h2>🔍 Diagnóstico</h2>
+        <p>Se este teste aparece com estilo, mas a aplicação principal não:</p>
+        <ul>
+            <li>O problema não é o navegador</li>
+            <li>O problema está na compilação/carregamento do Tailwind</li>
+            <li>Ou existe conflito de CSS</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="/" style="color: #60a5fa; text-decoration: none; padding: 10px 20px; border: 1px solid #60a5fa; border-radius: 4px;">← Voltar para Home</a>
+        <a href="/admin" style="color: #60a5fa; text-decoration: none; padding: 10px 20px; border: 1px solid #60a5fa; border-radius: 4px; margin-left: 10px;">Ir para Admin</a>
+    </div>
+</body>
+</html>

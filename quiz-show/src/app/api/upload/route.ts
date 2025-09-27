@@ -6,7 +6,7 @@ import { existsSync } from 'fs'
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
-    const file = formData.get('image') as File
+    const file = formData.get('file') as File
     
     if (!file) {
       return NextResponse.json({

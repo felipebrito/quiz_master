@@ -1,386 +1,288 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { useSocket, useAdminSocket } from '@/hooks/useSocket'
-import { BarChart3, Users, Clock, Trophy } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
+import { PlusCircle, Search, Rocket, Edit, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import Link from 'next/link';
 
 interface Participant {
-  id: string
-  name: string
-  city: string
-  state: string
-  photo_url: string | null
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  photo_url: string | null;
+  status: string;
+  points: number;
 }
 
-export default function AdminDashboard() {
-  const [participants, setParticipants] = useState<Participant[]>([])
-  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-  
-  const { socket, isConnected: mainConnected } = useSocket()
-  const { socket: adminSocket, isConnected: adminConnected } = useAdminSocket()
+const ITEMS_PER_PAGE = 6;
 
-  // Buscar participantes da API
-  const fetchParticipants = async () => {
+export default function AdminPage() {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+
+  const fetchParticipants = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setIsLoading(true)
-      const response = await fetch('/api/participants')
-      const data = await response.json()
-      
-      if (data.success) {
-        setParticipants(data.data)
-      } else {
-        setError('Erro ao carregar participantes')
+      const res = await fetch('/api/participants');
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
-    } catch (err) {
-      setError('Erro de conexão')
-      console.error('Erro ao buscar participantes:', err)
+      const data = await res.json();
+      const participantsWithPoints = data.data.map((p: Participant) => ({
+        ...p,
+        points: Math.floor(Math.random() * 200) + 50,
+      }));
+      setParticipants(participantsWithPoints);
+    } catch (e: any) {
+      setError(e.message);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  }, []);
 
-  // Carregar participantes ao montar o componente
   useEffect(() => {
-    fetchParticipants()
-  }, [])
+    fetchParticipants();
+  }, []);
 
-  // Atualizar participantes via Socket.IO
-  useEffect(() => {
-    if (socket) {
-      socket.on('participant_added', () => {
-        console.log('Novo participante adicionado, atualizando lista...')
-        fetchParticipants()
-      })
+  const filteredParticipants = participants.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.state.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredParticipants.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentParticipants = filteredParticipants.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
     }
+  };
 
-    if (adminSocket) {
-      adminSocket.on('participant_updated', () => {
-        console.log('Participante atualizado, atualizando lista...')
-        fetchParticipants()
-      })
-
-      // Listen for game events
-      adminSocket.on('admin:message', (data) => {
-        console.log('📢 Admin message:', data)
-        if (data.type === 'success') {
-          alert(`✅ ${data.message}`)
-        } else if (data.type === 'error') {
-          alert(`❌ ${data.message}`)
-        }
-      })
-
-      adminSocket.on('game:started', (data) => {
-        console.log('🎮 Game started:', data)
-        alert(`🎮 Jogo iniciado! ID: ${data.gameId}`)
-      })
-
-      adminSocket.on('game:ended', (data) => {
-        console.log('🏆 Game ended:', data)
-        alert(`🏆 Jogo finalizado! Vencedor: ${data.winner?.name || 'Nenhum'}`)
-      })
-    }
-
-    return () => {
-      if (socket) {
-        socket.off('participant_added')
-      }
-      if (adminSocket) {
-        adminSocket.off('participant_updated')
-        adminSocket.off('admin:message')
-        adminSocket.off('game:started')
-        adminSocket.off('game:ended')
-      }
-    }
-  }, [socket, adminSocket])
-
-  // Selecionar/deselecionar participante
-  const toggleParticipant = (participantId: string) => {
-    setSelectedParticipants(prev => {
-      if (prev.includes(participantId)) {
-        return prev.filter(id => id !== participantId)
+  const togglePlayerSelection = (playerId: string) => {
+    setSelectedPlayers(prev => {
+      if (prev.includes(playerId)) {
+        return prev.filter(id => id !== playerId);
       } else if (prev.length < 3) {
-        return [...prev, participantId]
+        return [...prev, playerId];
       }
-      return prev
-    })
+      return prev;
+    });
+  };
+
+  const canStartGame = selectedPlayers.length === 3;
+
+  const handleStartGame = () => {
+    if (canStartGame) {
+      console.log('Iniciando jogo com jogadores:', selectedPlayers);
+      // Aqui você implementaria a lógica para iniciar o jogo
+      alert(`Jogo iniciado com ${selectedPlayers.length} jogadores!`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Carregando participantes...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Remover participante
-  const removeParticipant = async (participantId: string) => {
-    if (!confirm('Tem certeza que deseja remover este participante?')) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/participants/${participantId}`, {
-        method: 'DELETE'
-      })
-      const data = await response.json()
-
-      if (data.success) {
-        setParticipants(prev => prev.filter(p => p.id !== participantId))
-        setSelectedParticipants(prev => prev.filter(id => id !== participantId))
-      } else {
-        alert('Erro ao remover participante: ' + data.error)
-      }
-    } catch (err) {
-      alert('Erro de conexão')
-      console.error('Erro ao remover participante:', err)
-    }
-  }
-
-  // Controles do Timer
-  const startTimer = () => {
-    if (adminSocket?.connected) {
-      adminSocket.emit('admin:timer:start')
-      console.log('Admin: Enviado comando para iniciar cronômetro')
-    }
-  }
-
-  const stopTimer = () => {
-    if (adminSocket?.connected) {
-      adminSocket.emit('admin:timer:stop')
-      console.log('Admin: Enviado comando para parar cronômetro')
-    }
-  }
-
-  const resetTimer = () => {
-    if (adminSocket?.connected) {
-      adminSocket.emit('admin:timer:reset')
-      console.log('Admin: Enviado comando para resetar cronômetro')
-    }
-  }
-
-  // Iniciar partida
-  const startGame = () => {
-    if (selectedParticipants.length !== 3) {
-      alert('Selecione exatamente 3 participantes para iniciar a partida')
-      return
-    }
-
-    const selectedNames = participants
-      .filter(p => selectedParticipants.includes(p.id))
-      .map(p => p.name)
-      .join(', ')
-
-    if (confirm(`Iniciar partida com: ${selectedNames}?`)) {
-      if (adminSocket?.connected) {
-        adminSocket.emit('admin:game:start', { 
-          participantIds: selectedParticipants 
-        })
-        console.log('🎮 Enviado comando para iniciar jogo com participantes:', selectedParticipants)
-      } else {
-        alert('Conexão com servidor não disponível')
-      }
-    }
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <p className="text-red-500">Erro ao carregar participantes: {error}</p>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">🎮 Dashboard Administrativo</h1>
-              <p className="text-gray-400">Gerencie a fila de participantes e inicie partidas</p>
-            </div>
-            <Link href="/admin/analytics">
-              <Button variant="outline" className="flex items-center gap-2 bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
-                <BarChart3 className="h-4 w-4" />
-                Analytics
-              </Button>
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold mb-12 text-center text-gray-100">QUIZ // APARATO</h1>
+
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* Left Section: Controls and Stats */}
+          <div className="flex flex-col w-full lg:w-1/3 space-y-8">
+            <button 
+              onClick={handleStartGame}
+              disabled={!canStartGame}
+              className={`font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-lg transition-all duration-200 ${
+                canStartGame 
+                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <Rocket className="mr-3 h-6 w-6" />
+              Iniciar partida {selectedPlayers.length > 0 && `(${selectedPlayers.length}/3)`}
+            </button>
+            
+            <Link href="/cadastro" className="w-full">
+              <button className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-md hover:bg-gray-50 transition-all duration-200">
+                <PlusCircle className="mr-3 h-6 w-6 text-green-500" />
+                cadastrar jogador
+              </button>
             </Link>
-          </div>
-          
-          {/* Status de Conexão */}
-          <div className="flex gap-4 mt-4">
-            <Badge variant={mainConnected ? "default" : "destructive"}>
-              Socket.IO: {mainConnected ? 'Conectado' : 'Desconectado'}
-            </Badge>
-            <Badge variant={adminConnected ? "default" : "destructive"}>
-              Admin: {adminConnected ? 'Conectado' : 'Desconectado'}
-            </Badge>
-          </div>
-        </div>
 
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-blue-400">{participants.length}</div>
-              <p className="text-gray-400">Total de Participantes</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-green-400">{selectedParticipants.length}</div>
-              <p className="text-gray-400">Selecionados para Jogo</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-yellow-400">
-                {participants.filter(p => p.status === 'waiting').length}
+            <div className="border-t border-gray-600 pt-8 grid grid-cols-2 gap-4 text-center">
+              <div>
+                <p className="text-4xl font-bold text-white">12</p>
+                <p className="text-gray-400">partidas</p>
               </div>
-              <p className="text-gray-400">Aguardando na Fila</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Ações */}
-        <div className="flex gap-4 mb-6">
-          <Button 
-            onClick={fetchParticipants}
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
-          >
-            🔄 Atualizar Lista
-          </Button>
-          
-          <Button 
-            onClick={startGame}
-            disabled={selectedParticipants.length !== 3}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
-          >
-            🚀 Iniciar Partida ({selectedParticipants.length}/3)
-          </Button>
-        </div>
-
-        {/* Controles do Timer */}
-        <Card className="bg-gray-800 border-gray-700 mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">⏰ Controles do Cronômetro</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <Button
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={startTimer}
-                disabled={!adminConnected}
-              >
-                ▶️ Iniciar Cronômetro
-              </Button>
-              <Button
-                className="bg-red-600 hover:bg-red-700"
-                onClick={stopTimer}
-                disabled={!adminConnected}
-              >
-                ⏹️ Parar Cronômetro
-              </Button>
-              <Button
-                className="bg-yellow-600 hover:bg-yellow-700"
-                onClick={resetTimer}
-                disabled={!adminConnected}
-              >
-                🔄 Resetar Cronômetro
-              </Button>
+              <div>
+                <p className="text-4xl font-bold text-white">{participants.length}</p>
+                <p className="text-gray-400">participantes</p>
+              </div>
+              <div>
+                <p className="text-4xl font-bold text-white">7.8</p>
+                <p className="text-gray-400">~pontos</p>
+              </div>
+              <div>
+                <p className="text-4xl font-bold text-white">45</p>
+                <p className="text-gray-400">~duração</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-400 mt-2">
-              Use estes controles para testar o cronômetro sincronizado nos jogadores
-            </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Lista de Participantes */}
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle>👥 Lista de Participantes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
-                <p className="mt-2 text-gray-400">Carregando participantes...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-400">
-                <p>{error}</p>
-                <Button onClick={fetchParticipants} className="mt-4">
-                  Tentar Novamente
-                </Button>
-              </div>
-            ) : participants.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p>Nenhum participante na fila</p>
-                <p className="text-sm mt-2">Os participantes aparecerão aqui quando se cadastrarem</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {participants.map((participant) => (
-                  <div
-                    key={participant.id}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedParticipants.includes(participant.id)
-                        ? 'border-blue-500 bg-blue-900/20'
-                        : 'border-gray-600 bg-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedParticipants.includes(participant.id)}
-                          onChange={() => toggleParticipant(participant.id)}
-                          disabled={!selectedParticipants.includes(participant.id) && selectedParticipants.length >= 3}
-                          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+          {/* Right Section: Player Selection and List */}
+          <div className="flex flex-col w-full lg:w-2/3 space-y-6">
+            {/* Player Slots */}
+            <div className="flex justify-center gap-4 mb-6">
+              {[1, 2, 3].map(num => {
+                const playerId = selectedPlayers[num - 1];
+                const player = playerId ? participants.find(p => p.id === playerId) : null;
+                return (
+                  <div key={num} className="w-20 h-20 bg-gray-800 rounded-lg flex items-center justify-center text-white text-3xl font-bold shadow-md border-2 border-gray-600">
+                    {player ? (
+                      <div className="w-full h-full rounded-lg overflow-hidden">
+                        <Image
+                          src={player.photo_url || '/placeholder-avatar.png'}
+                          alt={player.name}
+                          width={64}
+                          height={64}
+                          className="object-cover w-full h-full"
                         />
-                        
-                        <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">
-                          {participant.photo_url ? (
-                            <img 
-                              src={participant.photo_url} 
-                              alt={participant.name}
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-lg">👤</span>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <h3 className="font-semibold text-lg">{participant.name}</h3>
-                          <p className="text-gray-400">
-                            {participant.city}, {participant.state}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Cadastrado em: {new Date(participant.created_at).toLocaleString('pt-BR')}
-                          </p>
-                        </div>
                       </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={participant.status === 'waiting' ? 'default' : 'secondary'}>
-                          {participant.status === 'waiting' ? 'Aguardando' : participant.status}
-                        </Badge>
-                        
-                        <Button
-                          onClick={() => removeParticipant(participant.id)}
-                          variant="destructive"
-                          size="sm"
-                        >
-                          🗑️ Remover
-                        </Button>
-                      </div>
+                    ) : (
+                      num
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Digite o nome"
+                className="w-full pl-12 pr-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-white bg-gray-800 placeholder-gray-400"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+
+            {/* Participant List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {currentParticipants.map(participant => {
+                const isSelected = selectedPlayers.includes(participant.id);
+                const canSelect = selectedPlayers.length < 3 || isSelected;
+                
+                return (
+                  <div 
+                    key={participant.id} 
+                    className={`border rounded-lg p-4 flex items-center space-x-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                      isSelected 
+                        ? 'bg-green-900 border-green-500' 
+                        : canSelect 
+                          ? 'bg-gray-800 border-gray-600 hover:bg-gray-700' 
+                          : 'bg-gray-800 border-gray-600 opacity-50 cursor-not-allowed'
+                    }`}
+                    onClick={() => canSelect && togglePlayerSelection(participant.id)}
+                  >
+                    <div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <Image
+                        src={participant.photo_url || '/placeholder-avatar.png'}
+                        alt={participant.name}
+                        width={64}
+                        height={64}
+                        className="object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-avatar.png';
+                        }}
+                      />
+                    </div>
+                    <div className="flex-grow">
+                      <h3 className="font-bold text-lg text-white">{participant.name}</h3>
+                      <p className="text-gray-300">{participant.points} pontos</p>
+                      <p className="text-gray-400 text-sm">{participant.city} - {participant.state}</p>
+                      <button className="mt-2 text-sm text-gray-400 hover:text-green-400 flex items-center transition-colors duration-200">
+                        <Edit className="h-4 w-4 mr-1" /> EDITAR
+                      </button>
+                    </div>
+                    <div className="flex-shrink-0">
+                      {isSelected ? (
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <Check className="h-4 w-4 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 border-2 border-gray-400 rounded-full"></div>
+                      )}
                     </div>
                   </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-2 mt-6">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5 text-white" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => handlePageChange(i + 1)}
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === i + 1
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    } transition-colors`}
+                  >
+                    {i + 1}
+                  </button>
                 ))}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="h-5 w-5 text-white" />
+                </button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
-    </main>
-  )
+    </div>
+  );
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 interface FormData {
   name: string
@@ -224,7 +225,7 @@ export default function CadastroPage() {
       // Primeiro, fazer upload da imagem
       const formDataUpload = new FormData()
       const blob = await fetch(capturedImage!).then(r => r.blob())
-      formDataUpload.append('image', blob, 'selfie.jpg')
+      formDataUpload.append('file', blob, 'selfie.jpg')
       
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
@@ -242,7 +243,7 @@ export default function CadastroPage() {
         name: formData.name.trim(),
         city: formData.city.trim(),
         state: formData.state.trim().toUpperCase(),
-        photo_url: uploadData.data.url
+        photo: uploadData.data.url
       }
       
       const response = await fetch('/api/participants', {
@@ -273,6 +274,26 @@ export default function CadastroPage() {
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-6">
+      {/* Navegação */}
+      <nav className="mb-8">
+        <div className="flex justify-between items-center">
+          <Link href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+            ← Voltar ao Início
+          </Link>
+          <div className="flex gap-4">
+            <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+              Admin
+            </Link>
+            <Link href="/display" className="text-gray-300 hover:text-white transition-colors">
+              Display
+            </Link>
+            <Link href="/ranking" className="text-gray-300 hover:text-white transition-colors">
+              Ranking
+            </Link>
+          </div>
+        </div>
+      </nav>
+
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">🎮 Cadastro de Participantes</h1>
