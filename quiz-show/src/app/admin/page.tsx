@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { PlusCircle, Search, Rocket, Edit, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { PlusCircle, Search, Rocket, Edit, ChevronLeft, ChevronRight, Check, Camera, Upload, X } from 'lucide-react';
 import Link from 'next/link';
+import { useStatesCities } from '@/hooks/useStatesCities';
+import WebcamCapture from '@/components/WebcamCapture';
 
 interface Participant {
   id: string;
@@ -24,6 +26,49 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    city: '',
+    state: '',
+    photo: ''
+  });
+
+  const { states, cities, loading: loadingLocations, loadCities } = useStatesCities();
+
+  const handleEditParticipant = (participant: Participant) => {
+    setEditingParticipant(participant);
+    setEditForm({
+      name: participant.name,
+      city: participant.city,
+      state: participant.state,
+      photo: participant.photo_url || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditForm(prev => ({ ...prev, photo: e.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleWebcamCapture = (imageData: string) => {
+    setEditForm(prev => ({ ...prev, photo: imageData }));
+    setShowWebcam(false);
+  };
+
+  const handleStateChange = (stateId: string) => {
+    setEditForm(prev => ({ ...prev, state: stateId, city: '' }));
+    loadCities(parseInt(stateId));
+  };
 
   const fetchParticipants = useCallback(async () => {
     setLoading(true);
@@ -230,7 +275,13 @@ export default function AdminPage() {
                       <h3 className="font-bold text-lg text-white">{participant.name}</h3>
                       <p className="text-gray-300">{participant.points} pontos</p>
                       <p className="text-gray-400 text-sm">{participant.city} - {participant.state}</p>
-                      <button className="mt-2 text-sm text-gray-400 hover:text-green-400 flex items-center transition-colors duration-200">
+                      <button 
+                        className="mt-2 text-sm text-gray-400 hover:text-green-400 flex items-center transition-colors duration-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditParticipant(participant);
+                        }}
+                      >
                         <Edit className="h-4 w-4 mr-1" /> EDITAR
                       </button>
                     </div>
@@ -283,6 +334,146 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Edição */}
+      {showEditModal && editingParticipant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">Editar Participante</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Foto */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Foto
+                </label>
+                <div className="flex items-center space-x-4">
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+                    {editForm.photo ? (
+                      <Image
+                        src={editForm.photo}
+                        alt="Preview"
+                        width={80}
+                        height={80}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex space-x-2">
+                    <label className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      onClick={() => setShowWebcam(true)}
+                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Câmera
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nome */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Nome
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              
+              {/* Estado */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Estado
+                </label>
+                <select
+                  value={editForm.state}
+                  onChange={(e) => handleStateChange(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  disabled={loadingLocations}
+                >
+                  <option value="">Selecione o estado</option>
+                  {states.map(state => (
+                    <option key={state.id} value={state.id}>
+                      {state.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Cidade */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Cidade
+                </label>
+                <select
+                  value={editForm.city}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, city: e.target.value }))}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  disabled={!editForm.state || loadingLocations}
+                >
+                  <option value="">Selecione a cidade</option>
+                  {cities.map(city => (
+                    <option key={city.id} value={city.nome}>
+                      {city.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  // TODO: Implementar salvamento
+                  console.log('Salvar alterações:', editForm);
+                  setShowEditModal(false);
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Captura de Webcam */}
+      {showWebcam && (
+        <WebcamCapture
+          onCapture={handleWebcamCapture}
+          onClose={() => setShowWebcam(false)}
+        />
+      )}
     </div>
   );
 }
