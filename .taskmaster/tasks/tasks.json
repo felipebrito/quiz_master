@@ -266,7 +266,7 @@
         "dependencies": [
           14
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -274,7 +274,7 @@
             "description": "Planejar e implementar o layout executivo do dashboard utilizando componentes visuais do shadcn/ui, incluindo cards para métricas principais e área para gráficos.",
             "dependencies": [],
             "details": "Utilizar shadcn/ui para criar cards e containers que organizem as informações de partidas realizadas, participantes únicos, taxa de participação, tempo médio de partida e receita. Garantir clareza visual e fácil navegação.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Testar a disposição dos componentes em diferentes tamanhos de tela e validar a clareza das informações apresentadas."
           },
           {
@@ -285,7 +285,7 @@
               "15.1"
             ],
             "details": "Criar gráficos de barras, linhas e tabelas para visualizar partidas, participantes, taxa de participação, tempo médio e receita. Configurar temas e responsividade conforme padrão do shadcn/ui.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validar renderização dos gráficos em diferentes dispositivos e temas, além de testar interatividade e atualização dos dados."
           },
           {
@@ -296,7 +296,7 @@
               "15.1"
             ],
             "details": "Utilizar componentes de date picker do shadcn/ui para filtrar dados por intervalo de datas. Integrar filtros aos gráficos e tabelas para atualização em tempo real.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Testar seleção de diferentes períodos, validar atualização dos dados e simular cenários com grandes volumes de dados."
           },
           {
@@ -307,7 +307,7 @@
               "15.3"
             ],
             "details": "Implementar endpoints que agreguem dados de partidas, participantes, taxas e receita, retornando informações filtradas por período. Garantir cache e otimização das consultas.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Testar respostas das APIs com diferentes filtros, validar tempos de resposta e simular cenários de alta demanda."
           },
           {
@@ -319,7 +319,7 @@
               "15.4"
             ],
             "details": "Utilizar recursos do shadcn/ui para responsividade, testar navegação por teclado, contraste de cores e uso de leitores de tela. Validar que todos os elementos são acessíveis e adaptáveis.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Testar visualização em múltiplos dispositivos, validar navegação acessível e simular uso por pessoas com diferentes necessidades."
           }
         ]
@@ -492,7 +492,7 @@
     ],
     "metadata": {
       "created": "2025-09-26T21:18:33.011Z",
-      "updated": "2025-09-27T13:43:35.694Z",
+      "updated": "2025-09-27T13:56:57.784Z",
       "description": "Tasks for master context"
     }
   }

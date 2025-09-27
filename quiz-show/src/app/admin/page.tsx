@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useSocket, useAdminSocket } from '@/hooks/useSocket'
+import { BarChart3, Users, Clock, Trophy } from 'lucide-react'
+import Link from 'next/link'
 
 interface Participant {
   id: string
@@ -187,8 +189,18 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">🎮 Dashboard Administrativo</h1>
-          <p className="text-gray-400">Gerencie a fila de participantes e inicie partidas</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">🎮 Dashboard Administrativo</h1>
+              <p className="text-gray-400">Gerencie a fila de participantes e inicie partidas</p>
+            </div>
+            <Link href="/admin/analytics">
+              <Button variant="outline" className="flex items-center gap-2 bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
+              </Button>
+            </Link>
+          </div>
           
           {/* Status de Conexão */}
           <div className="flex gap-4 mt-4">
