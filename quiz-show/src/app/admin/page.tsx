@@ -40,12 +40,22 @@ export default function AdminPage() {
 
   const handleEditParticipant = (participant: Participant) => {
     setEditingParticipant(participant);
+    
+    // Encontrar o ID do estado baseado na sigla
+    const stateId = states.find(state => state.sigla === participant.state)?.id.toString() || '';
+    
     setEditForm({
       name: participant.name,
       city: participant.city,
-      state: participant.state,
+      state: stateId, // Usar ID para o dropdown
       photo: participant.photo_url || ''
     });
+    
+    // Carregar cidades se houver estado
+    if (stateId) {
+      loadCities(parseInt(stateId));
+    }
+    
     setShowEditModal(true);
   };
 
@@ -66,7 +76,9 @@ export default function AdminPage() {
   };
 
   const handleStateChange = (stateId: string) => {
-    setEditForm(prev => ({ ...prev, state: stateId, city: '' }));
+    const selectedState = states.find(state => state.id.toString() === stateId);
+    const stateSigla = selectedState ? selectedState.sigla : '';
+    setEditForm(prev => ({ ...prev, state: stateSigla, city: '' }));
     loadCities(parseInt(stateId));
   };
 
@@ -76,11 +88,15 @@ export default function AdminPage() {
     try {
       setLoading(true);
       
+      // Encontrar a sigla do estado baseado no ID selecionado
+      const selectedState = states.find(state => state.id.toString() === editForm.state);
+      const stateSigla = selectedState ? selectedState.sigla : editForm.state;
+      
       // Preparar dados para envio
       const formData = new FormData();
       formData.append('name', editForm.name);
       formData.append('city', editForm.city);
-      formData.append('state', editForm.state);
+      formData.append('state', stateSigla); // Enviar sigla, não ID
       
       // Se há uma nova foto (base64), enviar para upload
       if (editForm.photo && editForm.photo.startsWith('data:image')) {
