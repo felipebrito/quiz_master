@@ -70,6 +70,53 @@ export default function AdminPage() {
     loadCities(parseInt(stateId));
   };
 
+  const handleSaveParticipant = async () => {
+    if (!editingParticipant) return;
+
+    try {
+      setLoading(true);
+      
+      // Preparar dados para envio
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('city', editForm.city);
+      formData.append('state', editForm.state);
+      
+      // Se há uma nova foto (base64), enviar para upload
+      if (editForm.photo && editForm.photo.startsWith('data:image')) {
+        formData.append('photo', editForm.photo);
+      }
+
+      const response = await fetch(`/api/participants/${editingParticipant.id}`, {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao salvar participante');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Atualizar a lista de participantes
+        await fetchParticipants();
+        setShowEditModal(false);
+        setEditingParticipant(null);
+        setEditForm({ name: '', city: '', state: '', photo: '' });
+      } else {
+        throw new Error(result.error || 'Erro ao salvar participante');
+      }
+      
+    } catch (error) {
+      console.error('Erro ao salvar participante:', error);
+      setError(error instanceof Error ? error.message : 'Erro ao salvar participante');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchParticipants = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -364,6 +411,7 @@ export default function AdminPage() {
                         width={80}
                         height={80}
                         className="object-cover"
+                        style={{ width: "auto", height: "auto" }}
                       />
                     ) : (
                       <Camera className="h-8 w-8 text-gray-400" />
@@ -453,14 +501,11 @@ export default function AdminPage() {
                 Cancelar
               </button>
               <button
-                onClick={() => {
-                  // TODO: Implementar salvamento
-                  console.log('Salvar alterações:', editForm);
-                  setShowEditModal(false);
-                }}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                onClick={handleSaveParticipant}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Salvar
+                {loading ? 'Salvando...' : 'Salvar'}
               </button>
             </div>
           </div>

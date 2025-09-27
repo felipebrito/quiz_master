@@ -41,8 +41,7 @@ export async function PUT(
 ) {
   try {
     const { id } = params
-    const body = await request.json()
-
+    
     // Verificar se o participante existe
     const existingParticipant = await prisma.participant.findUnique({
       where: { id }
@@ -53,6 +52,22 @@ export async function PUT(
         success: false,
         error: 'Participante não encontrado'
       }, { status: 404 })
+    }
+
+    // Verificar se é FormData (com foto) ou JSON
+    const contentType = request.headers.get('content-type') || ''
+    let body: any = {}
+
+    if (contentType.includes('multipart/form-data')) {
+      // FormData - com possível upload de foto
+      const formData = await request.formData()
+      body.name = formData.get('name') as string
+      body.city = formData.get('city') as string
+      body.state = formData.get('state') as string
+      body.photo = formData.get('photo') as string
+    } else {
+      // JSON normal
+      body = await request.json()
     }
 
     // Validação dos dados (se fornecidos)
@@ -82,8 +97,18 @@ export async function PUT(
     if (body.name) updateData.name = body.name.trim()
     if (body.city) updateData.city = body.city.trim()
     if (body.state) updateData.state = body.state.trim().toUpperCase()
-    if (body.photo_url !== undefined) updateData.photo_url = body.photo_url?.trim() || null
     if (body.status) updateData.status = body.status
+
+    // Processar foto se fornecida
+    if (body.photo) {
+      if (body.photo.startsWith('data:image')) {
+        // Foto em base64 - salvar diretamente
+        updateData.photo_url = body.photo
+      } else if (body.photo_url !== undefined) {
+        // URL da foto
+        updateData.photo_url = body.photo_url?.trim() || null
+      }
+    }
 
     const updatedParticipant = await prisma.participant.update({
       where: { id },
