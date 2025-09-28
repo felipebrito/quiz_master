@@ -415,7 +415,7 @@ export default function AdminPage() {
 
       {/* Game Monitor */}
       <div className="mt-8">
-        <GameMonitor />
+        <GameMonitor adminSocket={adminSocket} />
       </div>
 
       {/* Modal de Edição */}

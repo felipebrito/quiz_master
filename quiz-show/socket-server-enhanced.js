@@ -580,8 +580,10 @@ adminIo.on('connection', (socket) => {
   console.log('👨‍💼 Admin connected:', socket.id)
 
   socket.on('admin:game:start', async (data) => {
+    console.log('🎮 Admin game start event received:', data)
     try {
       const result = await startGame(data.participantIds)
+      console.log('🎮 Game start result:', result)
       socket.emit('admin:message', result)
     } catch (error) {
       console.error('❌ Error starting game:', error)

@@ -38,7 +38,11 @@ interface GameState {
   }>
 }
 
-export default function GameMonitor() {
+interface GameMonitorProps {
+  adminSocket?: any
+}
+
+export default function GameMonitor({ adminSocket }: GameMonitorProps) {
   const [gameState, setGameState] = useState<GameState>({
     isActive: false,
     gameId: null,
@@ -51,96 +55,126 @@ export default function GameMonitor() {
     recentAnswers: []
   })
 
-  const [adminSocket, setAdminSocket] = useState<any>(null)
+  const [socket, setSocket] = useState<any>(null)
 
   useEffect(() => {
-    const socket = getAdminSocket()
-    setAdminSocket(socket)
+    console.log('🔌 GameMonitor: Initializing socket connection...')
+    if (adminSocket) {
+      console.log('🔌 GameMonitor: Using provided admin socket')
+      setSocket(adminSocket)
+    } else {
+      console.log('🔌 GameMonitor: Creating new socket connection')
+      const socketInstance = getAdminSocket()
+      setSocket(socketInstance)
+    }
 
-    socket?.on('connect', () => {
-      console.log('✅ Admin connected to game monitor')
-    })
+    // Set up socket listeners after socket is set
+    const setupSocketListeners = (socketInstance: any) => {
+      if (socketInstance) {
+        console.log('🔌 GameMonitor: Socket created, setting up listeners...')
+        
+        socketInstance.on('connect', () => {
+          console.log('✅ GameMonitor: Admin connected to game monitor')
+        })
 
-    socket?.on('disconnect', () => {
-      console.log('❌ Admin disconnected from game monitor')
-    })
+        socketInstance.on('disconnect', () => {
+          console.log('❌ GameMonitor: Admin disconnected from game monitor')
+        })
 
-    socket?.on('game:round:started', (data: any) => {
-      console.log('🎯 Round started:', data)
-      setGameState(prev => ({
-        ...prev,
-        isActive: true,
-        gameId: data.gameId,
-        currentRound: data.roundNumber,
-        question: data.question,
-        timeRemaining: data.timeRemaining,
-        isRunning: true,
-        recentAnswers: []
-      }))
-    })
+        socketInstance.on('game:round:started', (data: any) => {
+          console.log('🎯 GameMonitor: Round started event received:', data)
+          setGameState(prev => ({
+            ...prev,
+            isActive: true,
+            gameId: data.gameId,
+            currentRound: data.roundNumber,
+            question: data.question,
+            timeRemaining: data.timeRemaining,
+            isRunning: true,
+            recentAnswers: []
+          }))
+        })
 
-    socket?.on('game:answer:received', (data: any) => {
-      console.log('📝 Answer received:', data)
-      setGameState(prev => ({
-        ...prev,
-        recentAnswers: [
-          {
-            ...data,
-            timestamp: Date.now()
-          },
-          ...prev.recentAnswers
-        ].slice(0, 10) // Keep only last 10 answers
-      }))
-    })
+        socketInstance.on('game:answer:received', (data: any) => {
+          console.log('📝 GameMonitor: Answer received event:', data)
+          setGameState(prev => ({
+            ...prev,
+            recentAnswers: [
+              {
+                ...data,
+                timestamp: Date.now()
+              },
+              ...prev.recentAnswers
+            ].slice(0, 10) // Keep only last 10 answers
+          }))
+        })
 
-    socket?.on('game:round:ended', (data: any) => {
-      console.log('🏁 Round ended:', data)
-      setGameState(prev => ({
-        ...prev,
-        isRunning: false,
-        participants: data.currentScores,
-        recentAnswers: []
-      }))
-    })
+        socketInstance.on('game:round:ended', (data: any) => {
+          console.log('🏁 GameMonitor: Round ended event:', data)
+          setGameState(prev => ({
+            ...prev,
+            isRunning: false,
+            participants: data.currentScores,
+            recentAnswers: []
+          }))
+        })
 
-    socket?.on('game:timer:update', (data: any) => {
-      setGameState(prev => ({
-        ...prev,
-        timeRemaining: data.timeRemaining,
-        isRunning: data.isRunning
-      }))
-    })
+        socketInstance.on('game:timer:update', (data: any) => {
+          setGameState(prev => ({
+            ...prev,
+            timeRemaining: data.timeRemaining,
+            isRunning: data.isRunning
+          }))
+        })
 
-    socket?.on('game:ended', (data: any) => {
-      console.log('🏆 Game ended:', data)
-      setGameState(prev => ({
-        ...prev,
-        isActive: false,
-        isRunning: false,
-        participants: data.finalScores
-      }))
-    })
+        socketInstance.on('game:ended', (data: any) => {
+          console.log('🏆 GameMonitor: Game ended event:', data)
+          setGameState(prev => ({
+            ...prev,
+            isActive: false,
+            isRunning: false,
+            participants: data.finalScores
+          }))
+        })
+      } else {
+        console.error('❌ GameMonitor: Failed to create socket')
+      }
+    }
+
+    // Set up listeners after socket is set
+    if (adminSocket) {
+      setupSocketListeners(adminSocket)
+    } else {
+      const socketInstance = getAdminSocket()
+      if (socketInstance) {
+        setSocket(socketInstance)
+        setupSocketListeners(socketInstance)
+      }
+    }
 
     return () => {
-      socket?.disconnect()
+      // Only disconnect if we created the socket ourselves
+      if (!adminSocket && socket) {
+        socket.disconnect()
+      }
     }
-  }, [])
+  }, [adminSocket])
 
   const handleStopGame = () => {
-    if (adminSocket && gameState.gameId) {
-      adminSocket.emit('admin:game:stop')
+    if (socket && gameState.gameId) {
+      socket.emit('admin:game:stop')
     }
   }
 
   const handleEndRound = () => {
-    if (adminSocket && gameState.gameId) {
-      adminSocket.emit('admin:round:end')
+    if (socket && gameState.gameId) {
+      socket.emit('admin:round:end')
     }
   }
 
   const handleNewGame = () => {
-    if (adminSocket) {
-      adminSocket.emit('admin:game:new')
+    if (socket) {
+      socket.emit('admin:game:new')
     }
   }
 
