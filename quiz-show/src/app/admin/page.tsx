@@ -14,12 +14,10 @@ interface Participant {
   name: string;
   city: string;
   state: string;
-  photo_url: string | null;
-  status: string;
+  photo_url?: string;
   points: number;
+  status: string;
 }
-
-const ITEMS_PER_PAGE = 6;
 
 export default function AdminPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -28,8 +26,8 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
-  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
   const [showWebcam, setShowWebcam] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
@@ -75,6 +73,7 @@ export default function AdminPage() {
       if (data.success) {
         alert('Jogo iniciado com sucesso!');
         setIsGameActive(true);
+        loadStats(); // Reload stats after game start
       } else {
         alert('Erro ao iniciar jogo: ' + data.error);
       }
@@ -85,116 +84,26 @@ export default function AdminPage() {
     };
   }, []);
 
-  const handleEditParticipant = (participant: Participant) => {
-    setEditingParticipant(participant);
-    
-    // Encontrar o ID do estado baseado na sigla
-    const stateId = states.find(state => state.sigla === participant.state)?.id.toString() || '';
-    
-    setEditForm({
-      name: participant.name,
-      city: participant.city,
-      state: stateId, // Usar ID para o dropdown
-      photo: participant.photo_url || ''
-    });
-    
-    // Carregar cidades se houver estado
-    if (stateId) {
-      loadCities(parseInt(stateId));
-    }
-    
-    setShowEditModal(true);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setEditForm(prev => ({ ...prev, photo: e.target?.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleWebcamCapture = (imageData: string) => {
-    setEditForm(prev => ({ ...prev, photo: imageData }));
-    setShowWebcam(false);
-  };
-
-  const handleStateChange = (stateId: string) => {
-    const selectedState = states.find(state => state.id.toString() === stateId);
-    const stateSigla = selectedState ? selectedState.sigla : '';
-    setEditForm(prev => ({ ...prev, state: stateSigla, city: '' }));
-    loadCities(parseInt(stateId));
-  };
-
-  const handleSaveParticipant = async () => {
-    if (!editingParticipant) return;
-
-    try {
-      setLoading(true);
-      
-      // Encontrar a sigla do estado baseado no ID selecionado
-      const selectedState = states.find(state => state.id.toString() === editForm.state);
-      const stateSigla = selectedState ? selectedState.sigla : editForm.state;
-      
-      // Preparar dados para envio
-      const formData = new FormData();
-      formData.append('name', editForm.name);
-      formData.append('city', editForm.city);
-      formData.append('state', stateSigla); // Enviar sigla, não ID
-      
-      // Se há uma nova foto (base64), enviar para upload
-      if (editForm.photo && editForm.photo.startsWith('data:image')) {
-        formData.append('photo', editForm.photo);
-      }
-
-      const response = await fetch(`/api/participants/${editingParticipant.id}`, {
-        method: 'PUT',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao salvar participante');
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        // Atualizar a lista de participantes
-        await fetchParticipants();
-        setShowEditModal(false);
-        setEditingParticipant(null);
-        setEditForm({ name: '', city: '', state: '', photo: '' });
-      } else {
-        throw new Error(result.error || 'Erro ao salvar participante');
-      }
-      
-    } catch (error) {
-      console.error('Erro ao salvar participante:', error);
-      setError(error instanceof Error ? error.message : 'Erro ao salvar participante');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchParticipants = useCallback(async () => {
+    console.log('🔄 Fetching participants...');
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/participants');
+      console.log('📡 Response status:', res.status);
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const data = await res.json();
+      console.log('📊 Participants data:', data);
       const participantsWithPoints = data.data.map((p: Participant) => ({
         ...p,
         points: Math.floor(Math.random() * 200) + 50,
       }));
       setParticipants(participantsWithPoints);
+      console.log('✅ Participants loaded:', participantsWithPoints.length);
     } catch (e: any) {
+      console.error('❌ Erro ao buscar participantes:', e);
       setError(e.message);
     } finally {
       setLoading(false);
@@ -215,22 +124,21 @@ export default function AdminPage() {
     p.state.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredParticipants.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentParticipants = filteredParticipants.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentParticipants = filteredParticipants.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (page: number) => {
-    if (page > 0 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+    setCurrentPage(page);
   };
 
-  const togglePlayerSelection = (playerId: string) => {
+  const togglePlayerSelection = (participantId: string) => {
     setSelectedPlayers(prev => {
-      if (prev.includes(playerId)) {
-        return prev.filter(id => id !== playerId);
+      if (prev.includes(participantId)) {
+        return prev.filter(id => id !== participantId);
       } else if (prev.length < 3) {
-        return [...prev, playerId];
+        return [...prev, participantId];
       }
       return prev;
     });
@@ -239,12 +147,59 @@ export default function AdminPage() {
   const canStartGame = selectedPlayers.length === 3;
 
   const handleStartGame = () => {
-    if (canStartGame && adminSocket) {
-      console.log('Iniciando jogo com jogadores:', selectedPlayers);
+    if (adminSocket && canStartGame) {
+      console.log('🎮 Starting game with participants:', selectedPlayers);
       adminSocket.emit('admin:game:start', {
         participantIds: selectedPlayers
       });
     }
+  };
+
+  const handleEditParticipant = (participant: Participant) => {
+    setEditingParticipant(participant);
+    setEditForm({
+      name: participant.name,
+      city: participant.city,
+      state: participant.state,
+      photo: participant.photo_url || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveParticipant = async () => {
+    if (!editingParticipant) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/participants/${editingParticipant.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await fetchParticipants();
+        setShowEditModal(false);
+        setEditingParticipant(null);
+        setEditForm({ name: '', city: '', state: '', photo: '' });
+      } else {
+        throw new Error(result.error || 'Erro ao salvar participante');
+      }
+      
+    } catch (error) {
+      console.error('Erro ao salvar participante:', error);
+      setError(error instanceof Error ? error.message : 'Erro ao salvar participante');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWebcamCapture = (imageData: string) => {
+    setEditForm(prev => ({ ...prev, photo: imageData }));
+    setShowWebcam(false);
   };
 
   if (loading) {
@@ -261,7 +216,9 @@ export default function AdminPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <p className="text-red-500">Erro ao carregar participantes: {error}</p>
+        <div className="text-center">
+          <p className="text-red-500">Erro ao carregar participantes: {error}</p>
+        </div>
       </div>
     );
   }
@@ -321,138 +278,144 @@ export default function AdminPage() {
 
             {/* Right Section: Player Selection and List */}
             <div className="flex flex-col w-full lg:w-2/3 space-y-6">
-            {/* Player Slots */}
-            <div className="flex justify-center gap-4 mb-6">
-              {[1, 2, 3].map(num => {
-                const playerId = selectedPlayers[num - 1];
-                const player = playerId ? participants.find(p => p.id === playerId) : null;
-                return (
-                  <div key={num} className="w-20 h-20 bg-gray-800 rounded-lg flex items-center justify-center text-white text-3xl font-bold shadow-md border-2 border-gray-600">
-                    {player ? (
-                      <div className="w-full h-full rounded-lg overflow-hidden">
-                        <Image
-                          src={player.photo_url || '/placeholder-avatar.png'}
-                          alt={player.name}
-                          width={64}
-                          height={64}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    ) : (
-                      num
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Digite o nome"
-                className="w-full pl-12 pr-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-white bg-gray-800 placeholder-gray-400"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-            </div>
-
-            {/* Participant List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {currentParticipants.map(participant => {
-                const isSelected = selectedPlayers.includes(participant.id);
-                const canSelect = selectedPlayers.length < 3 || isSelected;
-                
-                return (
-                  <div 
-                    key={participant.id} 
-                    className={`border rounded-lg p-4 flex items-center space-x-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
-                      isSelected 
-                        ? 'bg-green-900 border-green-500' 
-                        : canSelect 
-                          ? 'bg-gray-800 border-gray-600 hover:bg-gray-700' 
-                          : 'bg-gray-800 border-gray-600 opacity-50 cursor-not-allowed'
-                    }`}
-                    onClick={() => canSelect && togglePlayerSelection(participant.id)}
-                  >
-                    <div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                      <Image
-                        src={participant.photo_url || '/placeholder-avatar.png'}
-                        alt={participant.name}
-                        width={64}
-                        height={64}
-                        className="object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder-avatar.png';
-                        }}
-                      />
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-bold text-lg text-white">{participant.name}</h3>
-                      <p className="text-gray-300">{participant.points} pontos</p>
-                      <p className="text-gray-400 text-sm">{participant.city} - {participant.state}</p>
-                      <button 
-                        className="mt-2 text-sm text-gray-400 hover:text-green-400 flex items-center transition-colors duration-200"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditParticipant(participant);
-                        }}
-                      >
-                        <Edit className="h-4 w-4 mr-1" /> EDITAR
-                      </button>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {isSelected ? (
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <Check className="h-4 w-4 text-white" />
+              {/* Player Slots */}
+              <div className="flex justify-center gap-4 mb-6">
+                {[1, 2, 3].map(num => {
+                  const playerId = selectedPlayers[num - 1];
+                  const player = playerId ? participants.find(p => p.id === playerId) : null;
+                  return (
+                    <div key={num} className="w-20 h-20 bg-gray-800 rounded-lg flex items-center justify-center text-white text-3xl font-bold shadow-md border-2 border-gray-600">
+                      {player ? (
+                        <div className="w-full h-full rounded-lg overflow-hidden">
+                          <Image
+                            src={player.photo_url || '/placeholder-avatar.png'}
+                            alt={player.name}
+                            width={64}
+                            height={64}
+                            className="object-cover w-full h-full"
+                          />
                         </div>
                       ) : (
-                        <div className="w-6 h-6 border-2 border-gray-400 rounded-full"></div>
+                        num
                       )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-2 mt-6">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="p-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="h-5 w-5 text-white" />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => handlePageChange(i + 1)}
-                    className={`px-4 py-2 rounded-md ${
-                      currentPage === i + 1
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    } transition-colors`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="p-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="h-5 w-5 text-white" />
-                </button>
+                  );
+                })}
               </div>
-            )}
+
+              {/* Search Bar */}
+              <div className="relative w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Digite o nome"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-white bg-gray-800 placeholder-gray-400"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+
+              {/* Participant List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {currentParticipants.map(participant => {
+                  const isSelected = selectedPlayers.includes(participant.id);
+                  const canSelect = selectedPlayers.length < 3 || isSelected;
+                  
+                  return (
+                    <div 
+                      key={participant.id} 
+                      className={`border rounded-lg p-4 flex items-center space-x-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                        isSelected 
+                          ? 'bg-green-900 border-green-500' 
+                          : canSelect 
+                            ? 'bg-gray-800 border-gray-600 hover:bg-gray-700' 
+                            : 'bg-gray-800 border-gray-600 opacity-50 cursor-not-allowed'
+                      }`}
+                      onClick={() => canSelect && togglePlayerSelection(participant.id)}
+                    >
+                      <div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <Image
+                          src={participant.photo_url || '/placeholder-avatar.png'}
+                          alt={participant.name}
+                          width={64}
+                          height={64}
+                          className="object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder-avatar.png';
+                          }}
+                        />
+                      </div>
+                      <div className="flex-grow">
+                        <h3 className="font-bold text-lg text-white">{participant.name}</h3>
+                        <p className="text-gray-300">{participant.points} pontos</p>
+                        <p className="text-gray-400 text-sm">{participant.city} - {participant.state}</p>
+                        <button 
+                          className="mt-2 text-sm text-gray-400 hover:text-green-400 flex items-center transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditParticipant(participant);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-1" /> EDITAR
+                        </button>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {isSelected ? (
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <Check className="h-4 w-4 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 border-2 border-gray-400 rounded-full"></div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-2 mt-6">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5 text-white" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`px-4 py-2 rounded-md ${
+                        currentPage === i + 1
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      } transition-colors`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5 text-white" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Game Monitor */}
+      <div className="mt-8">
+        <GameMonitor />
       </div>
 
       {/* Modal de Edição */}
@@ -468,55 +431,10 @@ export default function AdminPage() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
-            <div className="space-y-4">
-              {/* Foto */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Foto
-                </label>
-                <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
-                    {editForm.photo ? (
-                      <Image
-                        src={editForm.photo}
-                        alt="Preview"
-                        width={80}
-                        height={80}
-                        className="object-cover"
-                        style={{ width: "auto", height: "auto" }}
-                      />
-                    ) : (
-                      <Camera className="h-8 w-8 text-gray-400" />
-                    )}
-                  </div>
-                  <div className="flex space-x-2">
-                    <label className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-                    <button
-                      onClick={() => setShowWebcam(true)}
-                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                    >
-                      <Camera className="h-4 w-4 mr-2" />
-                      Câmera
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Nome */}
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Nome
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Nome</label>
                 <input
                   type="text"
                   value={editForm.name}
@@ -524,49 +442,70 @@ export default function AdminPage() {
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
-              
-              {/* Estado */}
+
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Estado
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
                 <select
                   value={editForm.state}
-                  onChange={(e) => handleStateChange(e.target.value)}
+                  onChange={(e) => {
+                    setEditForm(prev => ({ ...prev, state: e.target.value }));
+                    loadCities(e.target.value);
+                  }}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                  disabled={loadingLocations}
                 >
                   <option value="">Selecione o estado</option>
                   {states.map(state => (
-                    <option key={state.id} value={state.id}>
-                      {state.nome}
-                    </option>
+                    <option key={state} value={state}>{state}</option>
                   ))}
                 </select>
               </div>
-              
-              {/* Cidade */}
+
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Cidade
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Cidade</label>
                 <select
                   value={editForm.city}
                   onChange={(e) => setEditForm(prev => ({ ...prev, city: e.target.value }))}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                  disabled={!editForm.state || loadingLocations}
+                  disabled={!editForm.state}
                 >
                   <option value="">Selecione a cidade</option>
                   {cities.map(city => (
-                    <option key={city.id} value={city.nome}>
-                      {city.nome}
-                    </option>
+                    <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Foto</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={editForm.photo}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, photo: e.target.value }))}
+                    placeholder="URL da foto"
+                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button
+                    onClick={() => setShowWebcam(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {editForm.photo && (
+                <div className="mt-4">
+                  <img
+                    src={editForm.photo}
+                    alt="Preview"
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                </div>
+              )}
             </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
+
+            <div className="flex justify-end space-x-2 mt-6">
               <button
                 onClick={() => setShowEditModal(false)}
                 className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
@@ -584,11 +523,6 @@ export default function AdminPage() {
           </div>
         </div>
       )}
-
-      {/* Game Monitor */}
-        <div className="mt-8">
-          <GameMonitor />
-        </div>
 
       {/* Modal de Captura de Webcam */}
       {showWebcam && (
