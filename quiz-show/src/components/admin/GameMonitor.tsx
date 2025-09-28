@@ -61,6 +61,10 @@ export default function GameMonitor() {
       console.log('✅ Admin connected to game monitor')
     })
 
+    socket?.on('disconnect', () => {
+      console.log('❌ Admin disconnected from game monitor')
+    })
+
     socket?.on('game:round:started', (data: any) => {
       console.log('🎯 Round started:', data)
       setGameState(prev => ({
@@ -128,6 +132,18 @@ export default function GameMonitor() {
     }
   }
 
+  const handleEndRound = () => {
+    if (adminSocket && gameState.gameId) {
+      adminSocket.emit('admin:round:end')
+    }
+  }
+
+  const handleNewGame = () => {
+    if (adminSocket) {
+      adminSocket.emit('admin:game:new')
+    }
+  }
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'easy': return 'bg-green-100 text-green-800'
@@ -176,7 +192,7 @@ export default function GameMonitor() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="text-white">Monitor do Jogo</CardTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Badge className="bg-blue-500 text-white">
                 Rodada {gameState.currentRound}/{gameState.totalRounds}
               </Badge>
@@ -184,11 +200,28 @@ export default function GameMonitor() {
                 {gameState.timeRemaining}s
               </Badge>
               <Button 
+                onClick={handleEndRound}
+                variant="outline"
+                size="sm"
+                disabled={!gameState.isRunning}
+                className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+              >
+                Finalizar Rodada
+              </Button>
+              <Button 
                 onClick={handleStopGame}
                 variant="destructive"
                 size="sm"
               >
                 Parar Jogo
+              </Button>
+              <Button 
+                onClick={handleNewGame}
+                variant="default"
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Nova Partida
               </Button>
             </div>
           </div>

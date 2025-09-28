@@ -586,9 +586,9 @@ export default function AdminPage() {
       )}
 
       {/* Game Monitor */}
-      <div className="mt-8">
-        <GameMonitor />
-      </div>      </div>
+        <div className="mt-8">
+          <GameMonitor />
+        </div>
 
       {/* Modal de Captura de Webcam */}
       {showWebcam && (

@@ -29,7 +29,8 @@ let gameState = {
   roundStartTime: null,
   roundTimeout: null, // Timeout for round end
   answersReceived: new Set(), // Track who has answered
-  roundAnswers: new Map() // Store answers for current round
+  roundAnswers: new Map(), // Store answers for current round
+  allQuestions: [] // Store all questions for the current game
 }
 
 // Enhanced scoring system based on speed and difficulty
@@ -206,6 +207,7 @@ async function startGame(participantIds) {
     gameState.scores = {}
     gameState.answersReceived.clear()
     gameState.roundAnswers.clear()
+    gameState.allQuestions = allQuestions
 
     // Notify all clients
     io.emit('game:started', {
@@ -610,6 +612,59 @@ adminIo.on('connection', (socket) => {
         success: false, 
         error: error.message 
       })
+    }
+  })
+
+  socket.on('admin:round:end', () => {
+    try {
+      console.log('⏭️ Admin ending current round')
+      if (gameState.isActive && gameState.isRunning) {
+        // Clear current round timeout
+        if (gameState.roundTimeout) {
+          clearTimeout(gameState.roundTimeout)
+          gameState.roundTimeout = null
+        }
+        
+        // End current round immediately
+        const allQuestions = gameState.allQuestions || []
+        const currentRoundIndex = gameState.currentRound - 1
+        endRound(gameState.gameId, allQuestions, currentRoundIndex)
+        
+        socket.emit('admin:message', { success: true, message: 'Rodada finalizada' })
+      } else {
+        socket.emit('admin:message', { success: false, error: 'Nenhuma rodada ativa' })
+      }
+    } catch (error) {
+      console.error('❌ Error ending round:', error)
+      socket.emit('admin:message', { success: false, error: error.message })
+    }
+  })
+
+  socket.on('admin:game:new', () => {
+    try {
+      console.log('🆕 Admin requesting new game')
+      // Reset game state
+      gameState.isActive = false
+      gameState.gameId = null
+      gameState.participants = []
+      gameState.currentRound = 0
+      gameState.currentQuestion = null
+      gameState.timeRemaining = 30
+      gameState.isRunning = false
+      gameState.scores = {}
+      gameState.startTime = null
+      gameState.roundStartTime = null
+      gameState.roundTimeout = null
+      gameState.answersReceived.clear()
+      gameState.roundAnswers.clear()
+      
+      // Stop timer if running
+      stopTimer()
+      
+      socket.emit('admin:message', { success: true, message: 'Estado do jogo resetado. Pronto para nova partida.' })
+    } catch (error) {
+      console.error('❌ Error resetting game:', error)
+      socket.emit('admin:message', { success: false, error: error.message })
     }
   })
 
