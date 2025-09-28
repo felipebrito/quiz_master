@@ -276,16 +276,17 @@ async function startRound(gameId, allQuestions, roundIndex) {
     // Set timeout for round to end (always wait full time) - OUTSIDE the transition timeout
     gameState.roundTimeout = setTimeout(() => {
       endRound(gameId, allQuestions, roundIndex)
-    }, 32000) // 30 seconds + 2 seconds transition = 32 seconds total
+    }, 33000) // 30 seconds + 3 seconds transition = 33 seconds total
 
     // Emit round transition event first
+    console.log(`🎬 Emitting round transition: RODADA ${roundNumber}`)
     io.emit('round:transition', {
       gameId,
       roundNumber,
       message: `RODADA ${roundNumber}`
     })
 
-    // Wait 2 seconds for transition, then start the round
+    // Wait 3 seconds for transition, then start the round
     setTimeout(() => {
       // Start timer after transition
       startTimer()
@@ -323,7 +324,7 @@ async function startRound(gameId, allQuestions, roundIndex) {
         timeRemaining: 30,
         isRunning: true
       })
-    }, 2000)
+    }, 3000) // 3 seconds transition time
 
   } catch (error) {
     console.error('❌ Error starting round:', error)
