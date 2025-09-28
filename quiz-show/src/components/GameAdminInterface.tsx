@@ -1,99 +1,129 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Square, Trophy, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Square, Trophy, CheckCircle, XCircle, Clock, Play, Pause, SkipForward } from 'lucide-react';
 import Image from 'next/image';
-
-interface Player {
-  id: string;
-  name: string;
-  photo_url: string | null;
-  points: number;
-  correctAnswers: number;
-  wrongAnswers: number;
-  currentAnswer?: string;
-  answerTime?: number;
-}
-
-interface Question {
-  id: string;
-  text: string;
-  options: {
-    letter: string;
-    text: string;
-    isCorrect: boolean;
-  }[];
-}
-
-interface GameResponse {
-  playerId: string;
-  playerName: string;
-  answer: string;
-  isCorrect: boolean;
-  time: number;
-  points: number;
-}
+import { useGameState, GamePhase } from '@/hooks/useGameState';
 
 interface GameAdminInterfaceProps {
-  gameId: string;
-  players: Player[];
-  currentQuestion: Question | null;
-  currentRound: number;
-  totalRounds: number;
-  gameStartTime: Date;
-  responses: GameResponse[];
   onStopGame: () => void;
 }
 
 export default function GameAdminInterface({
-  gameId,
-  players,
-  currentQuestion,
-  currentRound,
-  totalRounds,
-  gameStartTime,
-  responses,
   onStopGame
 }: GameAdminInterfaceProps) {
+  const {
+    gameState,
+    players,
+    responses,
+    currentPhase,
+    connected,
+    loading,
+    error,
+    stopGame,
+    nextRound,
+    nextQuestion,
+    getElapsedTime,
+    formatTime,
+    formatResponseTime
+  } = useGameState();
+
   const [gameTime, setGameTime] = useState(0);
 
   // Timer do jogo
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = new Date();
-      const elapsed = Math.floor((now.getTime() - gameStartTime.getTime()) / 1000);
-      setGameTime(elapsed);
+      setGameTime(getElapsedTime());
     }, 100);
 
     return () => clearInterval(interval);
-  }, [gameStartTime]);
+  }, [getElapsedTime]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const handleStopGame = () => {
+    stopGame();
+    onStopGame();
   };
 
-  const formatResponseTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor((time % 60) / 1);
-    const milliseconds = Math.floor((time % 1) * 1000);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Conectando ao jogo...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={onStopGame}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Voltar ao Admin
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!gameState) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white mb-4">Nenhum jogo ativo</p>
+          <button
+            onClick={onStopGame}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Voltar ao Admin
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-white">QUIZ // APARATO</h1>
-          <button
-            onClick={onStopGame}
-            className="flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-semibold transition-colors"
-          >
-            <Square className="h-5 w-5 mr-2" />
-            Parar partida
-          </button>
+          <div>
+            <h1 className="text-4xl font-bold text-white">QUIZ // APARATO</h1>
+            <div className="flex items-center mt-2">
+              <div className={`w-3 h-3 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-sm text-gray-400">
+                {connected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={nextRound}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              <SkipForward className="h-4 w-4 mr-2" />
+              Próxima Rodada
+            </button>
+            <button
+              onClick={nextQuestion}
+              className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Próxima Pergunta
+            </button>
+            <button
+              onClick={handleStopGame}
+              className="flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              <Square className="h-5 w-5 mr-2" />
+              Parar partida
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -104,7 +134,7 @@ export default function GameAdminInterface({
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-white">
-                    {currentRound}/{totalRounds}
+                    {gameState.currentRound}/{gameState.totalRounds}
                   </div>
                   <div className="text-gray-400">rodadas</div>
                 </div>
@@ -116,6 +146,43 @@ export default function GameAdminInterface({
                 </div>
               </div>
             </div>
+
+            {/* Estado do Jogo */}
+            {currentPhase && (
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Estado do Jogo</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Fase:</span>
+                    <span className="text-white font-semibold capitalize">{currentPhase.type}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Título:</span>
+                    <span className="text-white font-semibold">{currentPhase.title}</span>
+                  </div>
+                  {currentPhase.subtitle && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Subtítulo:</span>
+                      <span className="text-white font-semibold">{currentPhase.subtitle}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Status:</span>
+                    <span className={`font-semibold ${
+                      gameState.status === 'active' ? 'text-green-400' :
+                      gameState.status === 'waiting' ? 'text-yellow-400' :
+                      gameState.status === 'finished' ? 'text-red-400' :
+                      'text-blue-400'
+                    }`}>
+                      {gameState.status === 'active' ? 'Ativo' :
+                       gameState.status === 'waiting' ? 'Aguardando' :
+                       gameState.status === 'finished' ? 'Finalizado' :
+                       'Iniciando'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Respostas */}
             <div className="bg-gray-800 rounded-lg p-6">
@@ -201,13 +268,13 @@ export default function GameAdminInterface({
             </div>
 
             {/* Pergunta Atual */}
-            {currentQuestion && (
+            {gameState.currentQuestion && (
               <div className="bg-gray-800 rounded-lg p-6">
                 <h3 className="text-xl font-bold text-white mb-4">
-                  {currentQuestion.text}
+                  {gameState.currentQuestion.text}
                 </h3>
                 <div className="space-y-3">
-                  {currentQuestion.options.map((option) => (
+                  {gameState.currentQuestion.options.map((option) => (
                     <div
                       key={option.letter}
                       className={`p-4 rounded-lg border-2 transition-colors ${

@@ -29,6 +29,8 @@ interface GameState {
     isCorrect: boolean
     points: number
     correctAnswer: string
+    responseTime: number
+    isFirst: boolean
   } | null
 }
 
@@ -48,146 +50,160 @@ export default function Jogador2Page() {
     lastAnswer: null
   })
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
-  const [hasAnswered, setHasAnswered] = useState(false)
+  const [isAnswering, setIsAnswering] = useState(false)
+  const [showAnswerResult, setShowAnswerResult] = useState(false)
+  const [pulseAnimation, setPulseAnimation] = useState(false)
+  const [shakeAnimation, setShakeAnimation] = useState(false)
+  const [glowAnimation, setGlowAnimation] = useState(false)
+
+  // Animation effects
+  useEffect(() => {
+    if (gameState.isRunning && gameState.timeRemaining <= 10) {
+      setPulseAnimation(true)
+    } else {
+      setPulseAnimation(false)
+    }
+  }, [gameState.timeRemaining, gameState.isRunning])
+
+  useEffect(() => {
+    if (showAnswerResult) {
+      const timer = setTimeout(() => {
+        setShowAnswerResult(false)
+        setSelectedAnswer(null)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showAnswerResult])
 
   useEffect(() => {
     const socketInstance = getSocket()
     setSocket(socketInstance)
 
-    if (socketInstance) {
-      // Connection events
-      socketInstance.on('connect', () => {
-        console.log('🔌 Jogador 2 conectado')
-        setIsConnected(true)
-        
-        // Register player
-        socketInstance.emit('player:register', {
-          playerId: 'jogador2',
-          playerName: 'Jogador 2'
-        })
-      })
+    // Connection events
+    socketInstance.on('connect', () => {
+      console.log('✅ Connected to server')
+      setIsConnected(true)
+    })
 
-      socketInstance.on('disconnect', () => {
-        console.log('🔌 Jogador 2 desconectado')
-        setIsConnected(false)
-      })
+    socketInstance.on('disconnect', () => {
+      console.log('❌ Disconnected from server')
+      setIsConnected(false)
+    })
 
-      // Game events
-      socketInstance.on('game:started', (data: any) => {
-        console.log('🎮 Jogo iniciado:', data)
-        setGameState(prev => ({
-          ...prev,
-          gameId: data.gameId,
-          isActive: true,
-          currentRound: data.currentRound,
-          totalRounds: data.totalRounds,
-          question: data.question,
-          participants: data.participants,
-          timeRemaining: 30,
-          isRunning: true,
-          score: 0,
-          lastAnswer: null
-        }))
-        setSelectedAnswer(null)
-        setHasAnswered(false)
-      })
+    // Game events
+    socketInstance.on('game:started', (data: any) => {
+      console.log('🎮 Game started:', data)
+      setGameState(prev => ({
+        ...prev,
+        gameId: data.gameId,
+        isActive: true,
+        currentRound: data.currentRound,
+        totalRounds: data.totalRounds,
+        question: data.question,
+        participants: data.participants,
+        score: 0
+      }))
+    })
 
-      socketInstance.on('round:started', (data: any) => {
-        console.log('🎯 Rodada iniciada:', data)
-        setGameState(prev => ({
-          ...prev,
-          currentRound: data.roundNumber,
-          question: data.question,
-          timeRemaining: data.timeRemaining,
-          isRunning: true
-        }))
-        setSelectedAnswer(null)
-        setHasAnswered(false)
-      })
+    socketInstance.on('round:started', (data: any) => {
+      console.log('🎯 Round started:', data)
+      setGameState(prev => ({
+        ...prev,
+        currentRound: data.roundNumber,
+        question: data.question,
+        timeRemaining: 30,
+        isRunning: true
+      }))
+      setSelectedAnswer(null)
+      setIsAnswering(false)
+      setShowAnswerResult(false)
+    })
 
-      socketInstance.on('round:ended', (data: any) => {
-        console.log('🏁 Rodada finalizada:', data)
-        setGameState(prev => ({
-          ...prev,
-          isRunning: false,
-          timeRemaining: 0
-        }))
-      })
+    socketInstance.on('round:ended', (data: any) => {
+      console.log('🏁 Round ended:', data)
+      setGameState(prev => ({
+        ...prev,
+        isRunning: false,
+        participants: data.currentScores,
+        score: data.currentScores.find((p: any) => p.id === 'player2')?.score || prev.score
+      }))
+    })
 
-      socketInstance.on('game:ended', (data: any) => {
-        console.log('🏆 Jogo finalizado:', data)
-        setGameState(prev => ({
-          ...prev,
-          isActive: false,
-          gameId: null,
-          currentRound: 0,
-          question: null,
-          isRunning: false,
-          timeRemaining: 30
-        }))
-        setSelectedAnswer(null)
-        setHasAnswered(false)
-      })
+    socketInstance.on('timer:update', (data: any) => {
+      setGameState(prev => ({
+        ...prev,
+        timeRemaining: data.timeRemaining,
+        isRunning: data.isRunning
+      }))
+    })
 
-      // Timer events
-      socketInstance.on('timer:update', (data: any) => {
-        setGameState(prev => ({
-          ...prev,
-          timeRemaining: data.timeRemaining,
-          isRunning: data.isRunning
-        }))
-      })
+    socketInstance.on('answer:result', (data: any) => {
+      console.log('📝 Answer result:', data)
+      setGameState(prev => ({
+        ...prev,
+        lastAnswer: {
+          isCorrect: data.isCorrect,
+          points: data.points,
+          correctAnswer: data.correctAnswer,
+          responseTime: data.responseTime,
+          isFirst: data.isFirst
+        }
+      }))
+      setShowAnswerResult(true)
+      setIsAnswering(false)
+      
+      // Trigger animations based on result
+      if (data.isCorrect) {
+        setGlowAnimation(true)
+        setTimeout(() => setGlowAnimation(false), 2000)
+      } else {
+        setShakeAnimation(true)
+        setTimeout(() => setShakeAnimation(false), 1000)
+      }
+    })
 
-      // Answer result
-      socketInstance.on('answer:result', (data: any) => {
-        console.log('📝 Resultado da resposta:', data)
-        setGameState(prev => ({
-          ...prev,
-          lastAnswer: data,
-          score: prev.score + data.points
-        }))
-      })
-    }
+    socketInstance.on('answer:received', (data: any) => {
+      console.log('📝 Answer received from:', data.participantName)
+    })
+
+    socketInstance.on('game:ended', (data: any) => {
+      console.log('🏆 Game ended:', data)
+      setGameState(prev => ({
+        ...prev,
+        isActive: false,
+        isRunning: false,
+        participants: data.finalScores,
+        score: data.finalScores.find((p: any) => p.id === 'player2')?.score || prev.score
+      }))
+    })
 
     return () => {
-      if (socketInstance) {
-        socketInstance.off('connect')
-        socketInstance.off('disconnect')
-        socketInstance.off('game:started')
-        socketInstance.off('round:started')
-        socketInstance.off('round:ended')
-        socketInstance.off('game:ended')
-        socketInstance.off('timer:update')
-        socketInstance.off('answer:result')
-      }
+      socketInstance.disconnect()
     }
   }, [])
 
   const handleAnswer = (answer: string) => {
-    if (!gameState.isActive || hasAnswered || !gameState.question || !socket) {
-      return
-    }
+    if (!gameState.isActive || !gameState.isRunning || isAnswering) return
 
     setSelectedAnswer(answer)
-    setHasAnswered(true)
+    setIsAnswering(true)
 
     // Send answer to server
     socket.emit('player:answer', {
       gameId: gameState.gameId,
-      questionId: gameState.question.id,
+      questionId: gameState.question?.id,
       answer: answer,
-      participantId: 'jogador2' // This should be the actual participant ID
+      participantId: 'player2',
+      participantName: 'Jogador 2'
     })
-
-    console.log('📝 Resposta enviada:', answer)
   }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-500'
-      case 'medium': return 'bg-yellow-500'
-      case 'hard': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      case 'easy': return 'bg-green-100 text-green-800'
+      case 'medium': return 'bg-yellow-100 text-yellow-800'
+      case 'hard': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -196,165 +212,204 @@ export default function Jogador2Page() {
       case 'easy': return 'Fácil'
       case 'medium': return 'Médio'
       case 'hard': return 'Difícil'
-      default: return 'Desconhecido'
+      default: return 'N/A'
     }
   }
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-green-900 to-blue-900 text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">🎮 Jogador 2</h1>
-          <div className="flex items-center justify-center gap-4">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-lg">
-              {isConnected ? 'Conectado' : 'Desconectado'}
-            </span>
-            {gameState.isActive && (
-              <Badge className="bg-green-600">Jogo Ativo</Badge>
-            )}
-          </div>
-        </div>
+  const getTimeColor = () => {
+    if (gameState.timeRemaining <= 5) return 'text-red-600'
+    if (gameState.timeRemaining <= 10) return 'text-yellow-600'
+    return 'text-green-600'
+  }
 
-        {/* Game Status */}
-        {gameState.isActive && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-white/10 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-400">{gameState.currentRound}</div>
-                <div className="text-sm">Rodada Atual</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-400">{gameState.score}</div>
-                <div className="text-sm">Pontuação</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-yellow-400">{gameState.timeRemaining}</div>
-                <div className="text-sm">Tempo Restante</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-400">{gameState.totalRounds}</div>
-                <div className="text-sm">Total de Rodadas</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+  const getOptionButtonClass = (option: string) => {
+    let baseClass = "w-full h-20 text-lg font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95"
+    
+    if (selectedAnswer === option) {
+      if (showAnswerResult && gameState.lastAnswer) {
+        if (gameState.lastAnswer.isCorrect && option === gameState.lastAnswer.correctAnswer) {
+          return `${baseClass} bg-green-500 text-white shadow-lg shadow-green-500/50 ${glowAnimation ? 'animate-pulse' : ''}`
+        } else if (!gameState.lastAnswer.isCorrect && option === selectedAnswer) {
+          return `${baseClass} bg-red-500 text-white shadow-lg shadow-red-500/50 ${shakeAnimation ? 'animate-bounce' : ''}`
+        } else if (option === gameState.lastAnswer.correctAnswer) {
+          return `${baseClass} bg-green-500 text-white shadow-lg shadow-green-500/50`
+        }
+      }
+      return `${baseClass} bg-blue-500 text-white shadow-lg shadow-blue-500/50`
+    }
+    
+    return `${baseClass} bg-white text-gray-800 border-2 border-gray-300 hover:border-blue-500 hover:shadow-lg`
+  }
 
-        {/* Question Card */}
-        {gameState.isActive && gameState.question && (
-          <Card className="bg-white/10 backdrop-blur-sm mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Pergunta {gameState.currentRound}</CardTitle>
-                <Badge className={getDifficultyColor(gameState.question.difficulty)}>
-                  {getDifficultyText(gameState.question.difficulty)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center mb-8">
-                <p className="text-2xl font-semibold mb-6">{gameState.question.text}</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button
-                    onClick={() => handleAnswer('A')}
-                    disabled={hasAnswered || !gameState.isRunning}
-                    className={`h-16 text-lg ${
-                      selectedAnswer === 'A' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-white/20 hover:bg-white/30'
-                    }`}
-                  >
-                    A) {gameState.question.optionA}
-                  </Button>
-                  <Button
-                    onClick={() => handleAnswer('B')}
-                    disabled={hasAnswered || !gameState.isRunning}
-                    className={`h-16 text-lg ${
-                      selectedAnswer === 'B' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-white/20 hover:bg-white/30'
-                    }`}
-                  >
-                    B) {gameState.question.optionB}
-                  </Button>
-                  <Button
-                    onClick={() => handleAnswer('C')}
-                    disabled={hasAnswered || !gameState.isRunning}
-                    className={`h-16 text-lg ${
-                      selectedAnswer === 'C' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-white/20 hover:bg-white/30'
-                    }`}
-                  >
-                    C) {gameState.question.optionC}
-                  </Button>
-                </div>
-
-                {hasAnswered && (
-                  <div className="mt-6 p-4 bg-white/20 rounded-lg">
-                    <p className="text-lg font-semibold mb-2">
-                      {gameState.lastAnswer?.isCorrect ? '✅ Correto!' : '❌ Incorreto!'}
-                    </p>
-                    <p className="text-sm">
-                      Resposta correta: {gameState.lastAnswer?.correctAnswer}
-                    </p>
-                    <p className="text-sm">
-                      Pontos ganhos: +{gameState.lastAnswer?.points || 0}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Waiting State */}
-        {!gameState.isActive && (
-          <Card className="bg-white/10 backdrop-blur-sm">
-            <CardContent className="p-8 text-center">
-              <div className="text-6xl mb-4">⏳</div>
-              <h2 className="text-2xl font-bold mb-4">Aguardando Início do Jogo</h2>
-              <p className="text-gray-300">
-                O administrador iniciará uma partida em breve...
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Participants List */}
-        {gameState.participants.length > 0 && (
-          <Card className="bg-white/10 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>👥 Participantes do Jogo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {gameState.participants.map((participant, index) => (
-                  <div key={index} className="bg-white/20 rounded-lg p-4 text-center">
-                    <div className="text-lg font-semibold">{participant.name}</div>
-                    <div className="text-sm text-gray-300">{participant.city}, {participant.state}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-gray-300">
-            Abra <a href="/jogador1" className="text-blue-400 hover:underline">Jogador 1</a> e <a href="/jogador3" className="text-blue-400 hover:underline">Jogador 3</a> em outras abas para testar o jogo
-          </p>
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-emerald-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-white mb-2">Conectando ao servidor...</h2>
+          <p className="text-green-200">Aguarde enquanto estabelecemos a conexão</p>
         </div>
       </div>
-    </main>
+    )
+  }
+
+  if (!gameState.isActive) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-emerald-900 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4 bg-white/10 backdrop-blur-lg border-white/20">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-white">Jogador 2</CardTitle>
+            <p className="text-green-200">Aguardando início do jogo...</p>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="animate-pulse">
+              <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4"></div>
+              <p className="text-white">O administrador iniciará o jogo em breve</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-emerald-900 p-4">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-4xl font-bold text-white mb-2">Jogador 2</h1>
+        <div className="flex justify-center items-center gap-4">
+          <Badge className="bg-green-500 text-white px-4 py-2 text-lg">
+            Rodada {gameState.currentRound} de {gameState.totalRounds}
+          </Badge>
+          <Badge className="bg-yellow-500 text-white px-4 py-2 text-lg">
+            Pontos: {gameState.score}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Timer */}
+      <div className="text-center mb-8">
+        <div className={`text-6xl font-bold ${getTimeColor()} ${pulseAnimation ? 'animate-pulse' : ''}`}>
+          {gameState.timeRemaining}
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-4 mt-4">
+          <div 
+            className={`h-4 rounded-full transition-all duration-1000 ${
+              gameState.timeRemaining <= 5 ? 'bg-red-500' : 
+              gameState.timeRemaining <= 10 ? 'bg-yellow-500' : 'bg-green-500'
+            }`}
+            style={{ width: `${(gameState.timeRemaining / 30) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Question Card */}
+      {gameState.question && (
+        <Card className="w-full max-w-4xl mx-auto mb-8 bg-white/10 backdrop-blur-lg border-white/20">
+          <CardHeader className="text-center">
+            <div className="flex justify-between items-center mb-4">
+              <Badge className={getDifficultyColor(gameState.question.difficulty)}>
+                {getDifficultyText(gameState.question.difficulty)}
+              </Badge>
+              <Badge className="bg-purple-500 text-white">
+                Pergunta {gameState.currentRound}
+              </Badge>
+            </div>
+            <CardTitle className="text-2xl font-bold text-white leading-relaxed">
+              {gameState.question.text}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={() => handleAnswer('A')}
+              disabled={!gameState.isRunning || isAnswering}
+              className={getOptionButtonClass('A')}
+            >
+              <span className="font-bold mr-3">A)</span>
+              {gameState.question.optionA}
+            </Button>
+            <Button
+              onClick={() => handleAnswer('B')}
+              disabled={!gameState.isRunning || isAnswering}
+              className={getOptionButtonClass('B')}
+            >
+              <span className="font-bold mr-3">B)</span>
+              {gameState.question.optionB}
+            </Button>
+            <Button
+              onClick={() => handleAnswer('C')}
+              disabled={!gameState.isRunning || isAnswering}
+              className={getOptionButtonClass('C')}
+            >
+              <span className="font-bold mr-3">C)</span>
+              {gameState.question.optionC}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Answer Result */}
+      {showAnswerResult && gameState.lastAnswer && (
+        <Card className="w-full max-w-2xl mx-auto mb-8 bg-white/10 backdrop-blur-lg border-white/20">
+          <CardContent className="text-center py-8">
+            <div className={`text-6xl mb-4 ${gameState.lastAnswer.isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+              {gameState.lastAnswer.isCorrect ? '✅' : '❌'}
+            </div>
+            <h3 className={`text-3xl font-bold mb-4 ${gameState.lastAnswer.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+              {gameState.lastAnswer.isCorrect ? 'Correto!' : 'Incorreto!'}
+            </h3>
+            <div className="space-y-2">
+              <p className="text-white text-lg">
+                Resposta correta: <span className="font-bold">{gameState.lastAnswer.correctAnswer}</span>
+              </p>
+              <p className="text-white text-lg">
+                Pontos ganhos: <span className="font-bold text-yellow-400">+{gameState.lastAnswer.points}</span>
+              </p>
+              <p className="text-white text-lg">
+                Tempo de resposta: <span className="font-bold">{(gameState.lastAnswer.responseTime / 1000).toFixed(1)}s</span>
+              </p>
+              {gameState.lastAnswer.isFirst && (
+                <p className="text-yellow-400 text-lg font-bold">🏆 Primeira resposta correta!</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Participants Scores */}
+      {gameState.participants.length > 0 && (
+        <Card className="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-lg border-white/20">
+          <CardHeader>
+            <CardTitle className="text-white text-center">Placar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {gameState.participants
+                .sort((a, b) => b.score - a.score)
+                .map((participant, index) => (
+                <div key={participant.id} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                    </span>
+                    <span className="text-white font-semibold">
+                      {participant.name}
+                    </span>
+                  </div>
+                  <span className="text-yellow-400 font-bold text-lg">
+                    {participant.score} pts
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Status Indicator */}
+      <div className="fixed top-4 right-4">
+        <div className={`w-4 h-4 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+      </div>
+    </div>
   )
 }

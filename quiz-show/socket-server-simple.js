@@ -23,8 +23,50 @@ let gameState = {
   currentQuestion: null,
   timeRemaining: 30,
   isRunning: false,
-  scores: {}
+  scores: {},
+  startTime: null,
+  timerInterval: null
 }
+
+// Carregar jogo ativo do banco de dados na inicialização
+async function loadActiveGame() {
+  try {
+    const activeGame = await prisma.game.findFirst({
+      where: { status: 'active' },
+      include: {
+        participants: {
+          include: {
+            participant: true
+          }
+        }
+      },
+      orderBy: { created_at: 'desc' }
+    })
+
+    if (activeGame) {
+      console.log('🎮 Carregando jogo ativo:', activeGame.id)
+      gameState.isActive = true
+      gameState.gameId = activeGame.id
+      gameState.currentRound = activeGame.current_round
+      gameState.startTime = activeGame.started_at
+      gameState.participants = activeGame.participants.map(gp => ({
+        id: gp.participant.id,
+        name: gp.participant.name,
+        photo_url: gp.participant.photo_url,
+        points: gp.score,
+        correctAnswers: 0, // TODO: calcular do banco
+        wrongAnswers: 0    // TODO: calcular do banco
+      }))
+      
+      console.log('👥 Participantes carregados:', gameState.participants.length)
+    }
+  } catch (error) {
+    console.error('❌ Erro ao carregar jogo ativo:', error)
+  }
+}
+
+// Carregar jogo ativo na inicialização
+loadActiveGame()
 
 // Timer functions
 function startTimer() {
@@ -360,6 +402,35 @@ io.on('connection', (socket) => {
 
 adminIo.on('connection', (socket) => {
   console.log('👨‍💼 Admin connected:', socket.id)
+
+  // Enviar estado atual do jogo quando admin se conecta
+  if (gameState.isActive && gameState.gameId) {
+    socket.emit('game:state', {
+      id: gameState.gameId,
+      status: 'active',
+      currentRound: gameState.currentRound || 1,
+      totalRounds: 6,
+      currentQuestion: gameState.currentQuestion,
+      startTime: gameState.startTime,
+      endTime: null
+    })
+    
+    // Enviar jogadores atuais
+    if (gameState.participants && gameState.participants.length > 0) {
+      socket.emit('game:players', gameState.participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        photo_url: p.photo_url,
+        points: p.points || 0,
+        correctAnswers: p.correctAnswers || 0,
+        wrongAnswers: p.wrongAnswers || 0,
+        isConnected: true
+      })))
+    }
+  } else {
+    // Nenhum jogo ativo
+    socket.emit('game:state', null)
+  }
 
   socket.on('admin:game:start', async (data) => {
     console.log('👨‍💼 Admin requested game start with participants:', data.participantIds)

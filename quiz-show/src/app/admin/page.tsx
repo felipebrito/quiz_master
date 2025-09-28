@@ -6,6 +6,8 @@ import { PlusCircle, Search, Rocket, Edit, ChevronLeft, ChevronRight, Check, Cam
 import Link from 'next/link';
 import { useStatesCities } from '@/hooks/useStatesCities';
 import WebcamCapture from '@/components/WebcamCapture';
+import { getAdminSocket } from '@/lib/socket';
+import GameMonitor from '@/components/admin/GameMonitor';
 
 interface Participant {
   id: string;
@@ -35,9 +37,34 @@ export default function AdminPage() {
     state: '',
     photo: ''
   });
-  const [gameStarted, setGameStarted] = useState(false);
+  const [adminSocket, setAdminSocket] = useState<any>(null);
+  const [isGameActive, setIsGameActive] = useState(false);
 
   const { states, cities, loading: loadingLocations, loadCities } = useStatesCities();
+
+  // Configure admin socket
+  useEffect(() => {
+    const socket = getAdminSocket();
+    setAdminSocket(socket);
+
+    socket?.on('connect', () => {
+      console.log('✅ Admin connected to socket server');
+    });
+
+    socket?.on('admin:message', (data: any) => {
+      console.log('📨 Admin message:', data);
+      if (data.success) {
+        alert('Jogo iniciado com sucesso!');
+        setIsGameActive(true);
+      } else {
+        alert('Erro ao iniciar jogo: ' + data.error);
+      }
+    });
+
+    return () => {
+      socket?.disconnect();
+    };
+  }, []);
 
   const handleEditParticipant = (participant: Participant) => {
     setEditingParticipant(participant);
@@ -134,17 +161,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleStartGame = () => {
-    if (selectedPlayers.length !== 3) {
-      alert('Selecione exatamente 3 jogadores para iniciar a partida');
-      return;
-    }
-    
-    // Aqui você implementaria a lógica para iniciar o jogo
-    // Por enquanto, vamos apenas navegar para a página de administração do jogo
-    window.location.href = '/admin/game';
-  };
-
   const fetchParticipants = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -198,6 +214,15 @@ export default function AdminPage() {
   };
 
   const canStartGame = selectedPlayers.length === 3;
+
+  const handleStartGame = () => {
+    if (canStartGame && adminSocket) {
+      console.log('Iniciando jogo com jogadores:', selectedPlayers);
+      adminSocket.emit('admin:game:start', {
+        participantIds: selectedPlayers
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -264,6 +289,11 @@ export default function AdminPage() {
                 <p className="text-gray-400">~duração</p>
               </div>
             </div>
+          </div>
+
+          {/* Game Monitor */}
+          <div className="w-full">
+            <GameMonitor />
           </div>
 
           {/* Right Section: Player Selection and List */}
