@@ -30,8 +30,10 @@ interface GameState {
     points: number
     correctAnswer: string
     responseTime: number
-    isFirst: boolean
+    answerOrder: number
   } | null
+  showTransition: boolean
+  transitionMessage: string
 }
 
 export default function Jogador2Page() {
@@ -47,7 +49,9 @@ export default function Jogador2Page() {
     isRunning: false,
     participants: [],
     score: 0,
-    lastAnswer: null
+    lastAnswer: null,
+    showTransition: false,
+    transitionMessage: ''
   })
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [isAnswering, setIsAnswering] = useState(false)
@@ -175,6 +179,38 @@ export default function Jogador2Page() {
         participants: data.finalScores,
         score: data.finalScores.find((p: any) => p.id === 'player2')?.score || prev.score
       }))
+    })
+
+    socketInstance.on('game:stopped', (data: any) => {
+      console.log('🛑 Game stopped:', data)
+      setGameState(prev => ({
+        ...prev,
+        isActive: false,
+        isRunning: false,
+        showTransition: false
+      }))
+      setSelectedAnswer(null)
+      setIsAnswering(false)
+      setShowAnswerResult(false)
+    })
+
+    socketInstance.on('game:reset', (data: any) => {
+      console.log('🔄 Game reset:', data)
+      setGameState(prev => ({
+        ...prev,
+        isActive: false,
+        isRunning: false,
+        currentRound: 0,
+        question: null,
+        timeRemaining: 30,
+        participants: [],
+        score: 0,
+        lastAnswer: null,
+        showTransition: false
+      }))
+      setSelectedAnswer(null)
+      setIsAnswering(false)
+      setShowAnswerResult(false)
     })
 
     return () => {

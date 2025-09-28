@@ -79,6 +79,26 @@ export default function AdminPage() {
       }
     });
 
+    socket?.on('game:stopped', (data: any) => {
+      console.log('🛑 Game stopped:', data);
+      // Reset admin interface
+      setIsGameActive(false);
+      setSelectedPlayers([]);
+      setSearchTerm('');
+      setCurrentPage(1);
+      loadStats(); // Reload stats after game stop
+    });
+
+    socket?.on('game:reset', (data: any) => {
+      console.log('🔄 Game reset:', data);
+      // Reset admin interface
+      setIsGameActive(false);
+      setSelectedPlayers([]);
+      setSearchTerm('');
+      setCurrentPage(1);
+      loadStats(); // Reload stats after game reset
+    });
+
     return () => {
       socket?.disconnect();
     };
@@ -372,6 +392,12 @@ export default function AdminPage() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Debug Info */}
+              <div className="text-center text-sm text-gray-400 mt-4">
+                Mostrando {currentParticipants.length} de {filteredParticipants.length} participantes
+                {searchTerm && ` (filtrado por: "${searchTerm}")`}
               </div>
 
               {/* Pagination Controls */}

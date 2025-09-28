@@ -59,29 +59,33 @@ export default function GameMonitor({ adminSocket }: GameMonitorProps) {
 
   useEffect(() => {
     console.log('🔌 GameMonitor: Initializing socket connection...')
+    
+    let socketInstance: any = null
+    
     if (adminSocket) {
       console.log('🔌 GameMonitor: Using provided admin socket')
-      setSocket(adminSocket)
+      socketInstance = adminSocket
     } else {
       console.log('🔌 GameMonitor: Creating new socket connection')
-      const socketInstance = getAdminSocket()
-      setSocket(socketInstance)
+      socketInstance = getAdminSocket()
     }
+    
+    setSocket(socketInstance)
 
     // Set up socket listeners after socket is set
-    const setupSocketListeners = (socketInstance: any) => {
-      if (socketInstance) {
+    const setupSocketListeners = (socket: any) => {
+      if (socket) {
         console.log('🔌 GameMonitor: Socket created, setting up listeners...')
         
-        socketInstance.on('connect', () => {
+        socket.on('connect', () => {
           console.log('✅ GameMonitor: Admin connected to game monitor')
         })
 
-        socketInstance.on('disconnect', () => {
+        socket.on('disconnect', () => {
           console.log('❌ GameMonitor: Admin disconnected from game monitor')
         })
 
-        socketInstance.on('game:round:started', (data: any) => {
+        socket.on('game:round:started', (data: any) => {
           console.log('🎯 GameMonitor: Round started event received:', data)
           setGameState(prev => ({
             ...prev,
@@ -95,7 +99,7 @@ export default function GameMonitor({ adminSocket }: GameMonitorProps) {
           }))
         })
 
-        socketInstance.on('game:answer:received', (data: any) => {
+        socket.on('game:answer:received', (data: any) => {
           console.log('📝 GameMonitor: Answer received event:', data)
           setGameState(prev => ({
             ...prev,
@@ -109,7 +113,7 @@ export default function GameMonitor({ adminSocket }: GameMonitorProps) {
           }))
         })
 
-        socketInstance.on('game:round:ended', (data: any) => {
+        socket.on('game:round:ended', (data: any) => {
           console.log('🏁 GameMonitor: Round ended event:', data)
           setGameState(prev => ({
             ...prev,
@@ -119,7 +123,7 @@ export default function GameMonitor({ adminSocket }: GameMonitorProps) {
           }))
         })
 
-        socketInstance.on('game:timer:update', (data: any) => {
+        socket.on('game:timer:update', (data: any) => {
           setGameState(prev => ({
             ...prev,
             timeRemaining: data.timeRemaining,
@@ -127,35 +131,59 @@ export default function GameMonitor({ adminSocket }: GameMonitorProps) {
           }))
         })
 
-        socketInstance.on('game:ended', (data: any) => {
-          console.log('🏆 GameMonitor: Game ended event:', data)
-          setGameState(prev => ({
-            ...prev,
-            isActive: false,
-            isRunning: false,
-            participants: data.finalScores
-          }))
-        })
+                socket.on('game:ended', (data: any) => {
+                  console.log('🏆 GameMonitor: Game ended event:', data)
+                  setGameState(prev => ({
+                    ...prev,
+                    isActive: false,
+                    isRunning: false,
+                    participants: data.finalScores
+                  }))
+                })
+
+                socket.on('game:stopped', (data: any) => {
+                  console.log('🛑 GameMonitor: Game stopped event:', data)
+                  setGameState(prev => ({
+                    ...prev,
+                    isActive: false,
+                    isRunning: false,
+                    question: null,
+                    timeRemaining: 30,
+                    recentAnswers: []
+                  }))
+                })
+
+                socket.on('game:reset', (data: any) => {
+                  console.log('🔄 GameMonitor: Game reset event:', data)
+                  setGameState(prev => ({
+                    ...prev,
+                    isActive: false,
+                    isRunning: false,
+                    currentRound: 0,
+                    question: null,
+                    timeRemaining: 30,
+                    participants: [],
+                    recentAnswers: []
+                  }))
+                })
       } else {
         console.error('❌ GameMonitor: Failed to create socket')
       }
     }
 
     // Set up listeners after socket is set
-    if (adminSocket) {
-      setupSocketListeners(adminSocket)
-    } else {
-      const socketInstance = getAdminSocket()
-      if (socketInstance) {
-        setSocket(socketInstance)
-        setupSocketListeners(socketInstance)
-      }
+    if (socketInstance) {
+      setupSocketListeners(socketInstance)
     }
 
     return () => {
+      // Cleanup function to remove listeners
+      if (socketInstance) {
+        socketInstance.removeAllListeners()
+      }
       // Only disconnect if we created the socket ourselves
-      if (!adminSocket && socket) {
-        socket.disconnect()
+      if (!adminSocket && socketInstance) {
+        socketInstance.disconnect()
       }
     }
   }, [adminSocket])

@@ -139,6 +139,40 @@ export default function DisplayPage() {
         }, 5000)
       })
 
+      socketInstance.on('game:stopped', (data: any) => {
+        console.log('🛑 Jogo parado:', data)
+        setGameState(prev => ({
+          ...prev,
+          isActive: false,
+          gameId: null,
+          currentRound: 0,
+          question: null,
+          participants: [],
+          timeRemaining: 0,
+          isRunning: false,
+          winner: null
+        }))
+        setIsIdle(true)
+        loadLeaderboard()
+      })
+
+      socketInstance.on('game:reset', (data: any) => {
+        console.log('🔄 Jogo resetado:', data)
+        setGameState(prev => ({
+          ...prev,
+          isActive: false,
+          gameId: null,
+          currentRound: 0,
+          question: null,
+          participants: [],
+          timeRemaining: 0,
+          isRunning: false,
+          winner: null
+        }))
+        setIsIdle(true)
+        loadLeaderboard()
+      })
+
       // Timer events
       socketInstance.on('timer:update', (data: any) => {
         setGameState(prev => ({

@@ -33,10 +33,8 @@ let gameState = {
   allQuestions: [] // Store all questions for the current game
 }
 
-// Enhanced scoring system based on speed and difficulty
-function calculateScore(isCorrect, responseTime, difficulty, isFirstAnswer = false) {
-  if (!isCorrect) return 0
-  
+// Enhanced scoring system based on speed, difficulty and answer order
+function calculateScore(isCorrect, responseTime, difficulty, answerOrder, totalAnswers) {
   let baseScore = 10
   
   // Difficulty multiplier
@@ -48,17 +46,28 @@ function calculateScore(isCorrect, responseTime, difficulty, isFirstAnswer = fal
   
   baseScore *= difficultyMultipliers[difficulty] || 1.0
   
+  if (!isCorrect) {
+    // Penalty for wrong answers based on order
+    if (answerOrder === 1) {
+      // First wrong answer gets penalty
+      return -Math.floor(baseScore * 0.5) // 50% penalty
+    } else {
+      // Other wrong answers get 0 points
+      return 0
+    }
+  }
+  
   // Speed bonus (faster = more points)
   const maxTime = 30000 // 30 seconds
   const timeBonus = Math.max(0, (maxTime - responseTime) / maxTime)
   const speedBonus = Math.floor(baseScore * timeBonus * 0.5) // Up to 50% bonus
   
-  // First answer bonus
-  const firstAnswerBonus = isFirstAnswer ? Math.floor(baseScore * 0.3) : 0
+  // Answer order bonus (first correct answer gets extra points)
+  const orderBonus = answerOrder === 1 ? Math.floor(baseScore * 0.3) : 0
   
-  const totalScore = Math.floor(baseScore + speedBonus + firstAnswerBonus)
+  const totalScore = Math.floor(baseScore + speedBonus + orderBonus)
   
-  console.log(`🎯 Score calculation: base=${baseScore}, speed=${speedBonus}, first=${firstAnswerBonus}, total=${totalScore}`)
+  console.log(`🎯 Score calculation: base=${baseScore}, speed=${speedBonus}, order=${orderBonus}, total=${totalScore}`)
   
   return totalScore
 }
@@ -261,45 +270,60 @@ async function startRound(gameId, allQuestions, roundIndex) {
     gameState.timeRemaining = 30
     gameState.isRunning = true
     gameState.roundStartTime = Date.now()
+    
+    console.log(`🔍 Debug startRound: participants.length=${gameState.participants.length}, answersReceived.size=${gameState.answersReceived.size}`)
 
-    // Start timer
-    startTimer()
-
-    // Emit round started event
-    io.emit('round:started', {
-      gameId,
-      roundNumber,
-      question: {
-        id: question.id,
-        text: question.text,
-        optionA: question.option_a,
-        optionB: question.option_b,
-        optionC: question.option_c,
-        correct_answer: question.correct_answer,
-        difficulty: question.difficulty
-      }
-    })
-
-    // Emit to admin namespace
-    adminIo.emit('game:round:started', {
-      gameId,
-      roundNumber,
-      question: {
-        id: question.id,
-        text: question.text,
-        optionA: question.option_a,
-        optionB: question.option_b,
-        optionC: question.option_c,
-        correct_answer: question.correct_answer,
-        difficulty: question.difficulty
-      },
-      timeRemaining: 30
-    })
-
-    // Set timeout for round to end (always wait full time)
+    // Set timeout for round to end (always wait full time) - OUTSIDE the transition timeout
     gameState.roundTimeout = setTimeout(() => {
       endRound(gameId, allQuestions, roundIndex)
-    }, 30000) // 30 seconds
+    }, 32000) // 30 seconds + 2 seconds transition = 32 seconds total
+
+    // Emit round transition event first
+    io.emit('round:transition', {
+      gameId,
+      roundNumber,
+      message: `RODADA ${roundNumber}`
+    })
+
+    // Wait 2 seconds for transition, then start the round
+    setTimeout(() => {
+      // Start timer after transition
+      startTimer()
+      
+      // Emit round started event
+      io.emit('round:started', {
+        gameId,
+        roundNumber,
+        question: {
+          id: question.id,
+          text: question.text,
+          optionA: question.option_a,
+          optionB: question.option_b,
+          optionC: question.option_c,
+          correct_answer: question.correct_answer,
+          difficulty: question.difficulty
+        },
+        timeRemaining: 30,
+        isRunning: true
+      })
+
+      // Emit to admin namespace
+      adminIo.emit('game:round:started', {
+        gameId,
+        roundNumber,
+        question: {
+          id: question.id,
+          text: question.text,
+          optionA: question.option_a,
+          optionB: question.option_b,
+          optionC: question.option_c,
+          correct_answer: question.correct_answer,
+          difficulty: question.difficulty
+        },
+        timeRemaining: 30,
+        isRunning: true
+      })
+    }, 2000)
 
   } catch (error) {
     console.error('❌ Error starting round:', error)
@@ -496,15 +520,17 @@ io.on('connection', (socket) => {
       // Check if answer is correct
       const isCorrect = data.answer === gameState.currentQuestion.correct_answer
       
-      // Check if this is the first correct answer
-      const isFirstCorrect = isCorrect && !Array.from(gameState.roundAnswers.values()).some(a => a.isCorrect)
+      // Determine answer order (1st, 2nd, 3rd)
+      const answerOrder = gameState.answersReceived.size + 1
+      const totalAnswers = gameState.participants.length
       
-      // Calculate score
+      // Calculate score with new system
       const points = calculateScore(
         isCorrect, 
         responseTime, 
         gameState.currentQuestion.difficulty,
-        isFirstCorrect
+        answerOrder,
+        totalAnswers
       )
 
       // Store answer
@@ -515,7 +541,7 @@ io.on('connection', (socket) => {
         isCorrect: isCorrect,
         points: points,
         responseTime: responseTime,
-        isFirst: isFirstCorrect,
+        answerOrder: answerOrder,
         timestamp: Date.now()
       }
 
@@ -538,7 +564,7 @@ io.on('connection', (socket) => {
         isCorrect: isCorrect,
         points: points,
         responseTime: responseTime,
-        isFirst: isFirstCorrect
+        answerOrder: answerOrder
       })
 
       // Broadcast to all players (without revealing correct answer yet)
@@ -546,7 +572,8 @@ io.on('connection', (socket) => {
         participantId: data.participantId,
         participantName: answerData.participantName,
         responseTime: responseTime,
-        isCorrect: isCorrect
+        isCorrect: isCorrect,
+        answerOrder: answerOrder
       })
 
       // Emit to admin namespace
@@ -556,10 +583,28 @@ io.on('connection', (socket) => {
         answer: data.answer,
         isCorrect: isCorrect,
         responseTime: responseTime,
-        points: points
+        points: points,
+        answerOrder: answerOrder
       })
 
-      console.log(`📊 ${answerData.participantName} answered ${data.answer}, correct: ${isCorrect}, points: ${points}, time: ${responseTime}ms`)
+      console.log(`📊 ${answerData.participantName} answered ${data.answer}, correct: ${isCorrect}, points: ${points}, time: ${responseTime}ms, order: ${answerOrder}`)
+
+      // Check if all participants have answered
+      console.log(`🔍 Debug: answersReceived.size=${gameState.answersReceived.size}, participants.length=${gameState.participants.length}`)
+      if (gameState.answersReceived.size >= gameState.participants.length) {
+        console.log('🏁 All participants answered, ending round immediately')
+        
+        // Clear round timeout since all answered
+        if (gameState.roundTimeout) {
+          clearTimeout(gameState.roundTimeout)
+          gameState.roundTimeout = null
+        }
+        
+        // End round immediately
+        const allQuestions = gameState.allQuestions || []
+        const currentRoundIndex = gameState.currentRound - 1
+        endRound(gameState.gameId, allQuestions, currentRoundIndex)
+      }
 
     } catch (error) {
       console.error('❌ Error processing answer:', error)
@@ -596,18 +641,64 @@ adminIo.on('connection', (socket) => {
 
   socket.on('admin:game:stop', async () => {
     try {
-      if (gameState.isActive && gameState.gameId) {
-        await endGame(gameState.gameId)
-        socket.emit('admin:message', { 
-          success: true, 
-          message: 'Game stopped successfully' 
-        })
-      } else {
-        socket.emit('admin:message', { 
-          success: false, 
-          message: 'No active game to stop' 
-        })
+      console.log('🛑 Admin stopping game...')
+      
+      // Clear any active timeouts
+      if (gameState.roundTimeout) {
+        clearTimeout(gameState.roundTimeout)
+        gameState.roundTimeout = null
       }
+      
+      // Stop timer
+      stopTimer()
+      
+      // Reset game state immediately
+      gameState.isActive = false
+      gameState.gameId = null
+      gameState.participants = []
+      gameState.currentRound = 0
+      gameState.currentQuestion = null
+      gameState.timeRemaining = 30
+      gameState.isRunning = false
+      gameState.scores = {}
+      gameState.startTime = null
+      gameState.roundStartTime = null
+      gameState.answersReceived.clear()
+      gameState.roundAnswers.clear()
+      gameState.allQuestions = []
+      
+      // Emit game stopped to all players
+      io.emit('game:stopped', {
+        message: 'Jogo interrompido pelo administrador'
+      })
+      
+      // Emit to admin namespace
+      adminIo.emit('game:stopped', {
+        message: 'Jogo interrompido com sucesso'
+      })
+      
+      // Update database if there was an active game
+      if (gameState.gameId) {
+        try {
+          await prisma.game.update({
+            where: { id: gameState.gameId },
+            data: { 
+              status: 'stopped',
+              ended_at: new Date()
+            }
+          })
+        } catch (dbError) {
+          console.error('❌ Error updating game in database:', dbError)
+        }
+      }
+      
+      socket.emit('admin:message', { 
+        success: true, 
+        message: 'Jogo interrompido com sucesso' 
+      })
+      
+      console.log('✅ Game stopped and reset successfully')
+      
     } catch (error) {
       console.error('❌ Error stopping game:', error)
       socket.emit('admin:message', { 
@@ -645,7 +736,17 @@ adminIo.on('connection', (socket) => {
   socket.on('admin:game:new', () => {
     try {
       console.log('🆕 Admin requesting new game')
-      // Reset game state
+      
+      // Clear any active timeouts
+      if (gameState.roundTimeout) {
+        clearTimeout(gameState.roundTimeout)
+        gameState.roundTimeout = null
+      }
+      
+      // Stop timer if running
+      stopTimer()
+      
+      // Reset game state completely
       gameState.isActive = false
       gameState.gameId = null
       gameState.participants = []
@@ -656,14 +757,27 @@ adminIo.on('connection', (socket) => {
       gameState.scores = {}
       gameState.startTime = null
       gameState.roundStartTime = null
-      gameState.roundTimeout = null
       gameState.answersReceived.clear()
       gameState.roundAnswers.clear()
+      gameState.allQuestions = []
       
-      // Stop timer if running
-      stopTimer()
+      // Emit game reset to all players
+      io.emit('game:reset', {
+        message: 'Jogo resetado. Aguardando nova partida...'
+      })
       
-      socket.emit('admin:message', { success: true, message: 'Estado do jogo resetado. Pronto para nova partida.' })
+      // Emit to admin namespace
+      adminIo.emit('game:reset', {
+        message: 'Jogo resetado com sucesso'
+      })
+      
+      socket.emit('admin:message', { 
+        success: true, 
+        message: 'Estado do jogo resetado. Pronto para nova partida.' 
+      })
+      
+      console.log('✅ Game state reset successfully')
+      
     } catch (error) {
       console.error('❌ Error resetting game:', error)
       socket.emit('admin:message', { success: false, error: error.message })

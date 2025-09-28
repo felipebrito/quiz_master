@@ -30,8 +30,10 @@ interface GameState {
     points: number
     correctAnswer: string
     responseTime: number
-    isFirst: boolean
+    answerOrder: number
   } | null
+  showTransition: boolean
+  transitionMessage: string
 }
 
 export default function Jogador1Page() {
@@ -47,7 +49,9 @@ export default function Jogador1Page() {
     isRunning: false,
     participants: [],
     score: 0,
-    lastAnswer: null
+    lastAnswer: null,
+    showTransition: false,
+    transitionMessage: ''
   })
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [isAnswering, setIsAnswering] = useState(false)
@@ -105,14 +109,26 @@ export default function Jogador1Page() {
       }))
     })
 
+    socketInstance.on('round:transition', (data: any) => {
+      console.log('🎬 Round transition:', data)
+      setGameState(prev => ({
+        ...prev,
+        showTransition: true,
+        transitionMessage: data.message
+      }))
+    })
+
     socketInstance.on('round:started', (data: any) => {
       console.log('🎯 Round started:', data)
       setGameState(prev => ({
         ...prev,
+        isActive: true,
         currentRound: data.roundNumber,
         question: data.question,
-        timeRemaining: 30,
-        isRunning: true
+        timeRemaining: data.timeRemaining,
+        isRunning: data.isRunning,
+        lastAnswer: null,
+        showTransition: false
       }))
       setSelectedAnswer(null)
       setIsAnswering(false)
@@ -146,7 +162,7 @@ export default function Jogador1Page() {
           points: data.points,
           correctAnswer: data.correctAnswer,
           responseTime: data.responseTime,
-          isFirst: data.isFirst
+          answerOrder: data.answerOrder
         }
       }))
       setShowAnswerResult(true)
@@ -175,6 +191,38 @@ export default function Jogador1Page() {
         participants: data.finalScores,
         score: data.finalScores.find((p: any) => p.id === 'player1')?.score || prev.score
       }))
+    })
+
+    socketInstance.on('game:stopped', (data: any) => {
+      console.log('🛑 Game stopped:', data)
+      setGameState(prev => ({
+        ...prev,
+        isActive: false,
+        isRunning: false,
+        showTransition: false
+      }))
+      setSelectedAnswer(null)
+      setIsAnswering(false)
+      setShowAnswerResult(false)
+    })
+
+    socketInstance.on('game:reset', (data: any) => {
+      console.log('🔄 Game reset:', data)
+      setGameState(prev => ({
+        ...prev,
+        isActive: false,
+        isRunning: false,
+        currentRound: 0,
+        question: null,
+        timeRemaining: 30,
+        participants: [],
+        score: 0,
+        lastAnswer: null,
+        showTransition: false
+      }))
+      setSelectedAnswer(null)
+      setIsAnswering(false)
+      setShowAnswerResult(false)
     })
 
     return () => {
@@ -268,6 +316,22 @@ export default function Jogador1Page() {
             </div>
           </CardContent>
         </Card>
+      </div>
+    )
+  }
+
+  // Show transition screen
+  if (gameState.showTransition) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-9xl font-bold text-white mb-8 animate-pulse">
+            {gameState.transitionMessage}
+          </div>
+          <div className="text-2xl text-blue-200">
+            Preparando próxima pergunta...
+          </div>
+        </div>
       </div>
     )
   }
@@ -368,9 +432,12 @@ export default function Jogador1Page() {
               <p className="text-white text-lg">
                 Tempo de resposta: <span className="font-bold">{(gameState.lastAnswer.responseTime / 1000).toFixed(1)}s</span>
               </p>
-              {gameState.lastAnswer.isFirst && (
-                <p className="text-yellow-400 text-lg font-bold">🏆 Primeira resposta correta!</p>
-              )}
+              <p className="text-yellow-400 text-lg font-bold">
+                {gameState.lastAnswer.answerOrder === 1 ? '🏆 1ª resposta!' : 
+                 gameState.lastAnswer.answerOrder === 2 ? '🥈 2ª resposta!' : 
+                 gameState.lastAnswer.answerOrder === 3 ? '🥉 3ª resposta!' : 
+                 `${gameState.lastAnswer.answerOrder}ª resposta`}
+              </p>
             </div>
           </CardContent>
         </Card>
