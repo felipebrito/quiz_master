@@ -109,10 +109,20 @@ export default function Jogador2Page() {
       }))
     })
 
+    socketInstance.on('round:transition', (data: any) => {
+      console.log('🎬 Round transition:', data)
+      setGameState(prev => ({
+        ...prev,
+        showTransition: true,
+        transitionMessage: data.message
+      }))
+    })
+
     socketInstance.on('round:started', (data: any) => {
       console.log('🎯 Round started:', data)
       setGameState(prev => ({
         ...prev,
+        showTransition: false,
         currentRound: data.roundNumber,
         question: data.question,
         timeRemaining: 30,
@@ -304,6 +314,22 @@ export default function Jogador2Page() {
             </div>
           </CardContent>
         </Card>
+      </div>
+    )
+  }
+
+  // Show transition screen
+  if (gameState.showTransition) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-emerald-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-9xl font-bold text-white mb-8 animate-pulse">
+            {gameState.transitionMessage}
+          </div>
+          <div className="text-2xl text-green-200">
+            Preparando próxima pergunta...
+          </div>
+        </div>
       </div>
     )
   }
