@@ -39,8 +39,27 @@ export default function AdminPage() {
   });
   const [adminSocket, setAdminSocket] = useState<any>(null);
   const [isGameActive, setIsGameActive] = useState(false);
+  const [stats, setStats] = useState({
+    totalGames: 0,
+    totalParticipants: 0,
+    averageScore: 0,
+    averageDuration: 0
+  });
 
   const { states, cities, loading: loadingLocations, loadCities } = useStatesCities();
+
+  // Load statistics
+  const loadStats = async () => {
+    try {
+      const response = await fetch('/api/admin/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   // Configure admin socket
   useEffect(() => {
@@ -186,6 +205,10 @@ export default function AdminPage() {
     fetchParticipants();
   }, []);
 
+  useEffect(() => {
+    loadStats();
+  }, []);
+
   const filteredParticipants = participants.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -248,56 +271,56 @@ export default function AdminPage() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-12 text-center text-gray-100">QUIZ // APARATO</h1>
 
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Left Section: Controls and Stats */}
-          <div className="flex flex-col w-full lg:w-1/3 space-y-8">
-            <button 
-              onClick={handleStartGame}
-              disabled={!canStartGame}
-              className={`font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-lg transition-all duration-200 ${
-                canStartGame 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              <Rocket className="mr-3 h-6 w-6" />
-              Iniciar partida {selectedPlayers.length > 0 && `(${selectedPlayers.length}/3)`}
-            </button>
-            
-            <Link href="/cadastro" className="w-full">
-              <button className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-md hover:bg-gray-50 transition-all duration-200">
-                <PlusCircle className="mr-3 h-6 w-6 text-green-500" />
-                cadastrar jogador
+        <div className="space-y-8">
+          {/* Top Section: Controls and Stats */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Section: Controls */}
+            <div className="flex flex-col w-full lg:w-1/3 space-y-6">
+              <button 
+                onClick={handleStartGame}
+                disabled={!canStartGame}
+                className={`font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-lg transition-all duration-200 ${
+                  canStartGame 
+                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <Rocket className="mr-3 h-6 w-6" />
+                Iniciar partida {selectedPlayers.length > 0 && `(${selectedPlayers.length}/3)`}
               </button>
-            </Link>
+              
+              <Link href="/cadastro" className="w-full">
+                <button className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-md hover:bg-gray-50 transition-all duration-200">
+                  <PlusCircle className="mr-3 h-6 w-6 text-green-500" />
+                  cadastrar jogador
+                </button>
+              </Link>
+            </div>
 
-            <div className="border-t border-gray-600 pt-8 grid grid-cols-2 gap-4 text-center">
-              <div>
-                <p className="text-4xl font-bold text-white">12</p>
-                <p className="text-gray-400">partidas</p>
-              </div>
-              <div>
-                <p className="text-4xl font-bold text-white">{participants.length}</p>
-                <p className="text-gray-400">participantes</p>
-              </div>
-              <div>
-                <p className="text-4xl font-bold text-white">7.8</p>
-                <p className="text-gray-400">~pontos</p>
-              </div>
-              <div>
-                <p className="text-4xl font-bold text-white">45</p>
-                <p className="text-gray-400">~duração</p>
+            {/* Center Section: Statistics */}
+            <div className="flex flex-col w-full lg:w-1/3 space-y-6">
+              <div className="border-t border-gray-600 pt-6 grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <p className="text-4xl font-bold text-white">{stats.totalGames}</p>
+                  <p className="text-gray-400">partidas</p>
+                </div>
+                <div>
+                  <p className="text-4xl font-bold text-white">{stats.totalParticipants}</p>
+                  <p className="text-gray-400">participantes</p>
+                </div>
+                <div>
+                  <p className="text-4xl font-bold text-white">{stats.averageScore.toFixed(1)}</p>
+                  <p className="text-gray-400">~pontos</p>
+                </div>
+                <div>
+                  <p className="text-4xl font-bold text-white">{stats.averageDuration.toFixed(0)}</p>
+                  <p className="text-gray-400">~duração</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Game Monitor */}
-          <div className="w-full">
-            <GameMonitor />
-          </div>
-
-          {/* Right Section: Player Selection and List */}
-          <div className="flex flex-col w-full lg:w-2/3 space-y-6">
+            {/* Right Section: Player Selection and List */}
+            <div className="flex flex-col w-full lg:w-2/3 space-y-6">
             {/* Player Slots */}
             <div className="flex justify-center gap-4 mb-6">
               {[1, 2, 3].map(num => {
@@ -561,6 +584,11 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* Game Monitor */}
+      <div className="mt-8">
+        <GameMonitor />
+      </div>      </div>
 
       {/* Modal de Captura de Webcam */}
       {showWebcam && (

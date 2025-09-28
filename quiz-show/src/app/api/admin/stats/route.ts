@@ -39,8 +39,8 @@ export async function GET() {
     return NextResponse.json({
       totalGames,
       totalParticipants,
-      avgScore: avgScore / 10, // Converter para escala de 0-10
-      avgDuration
+      averageScore: avgScore / 10, // Converter para escala de 0-10
+      averageDuration: avgDuration
     });
 
   } catch (error) {
