@@ -229,55 +229,53 @@ export default function AdminPage() {
         <h1 className="text-4xl font-bold mb-12 text-center text-gray-100">QUIZ // APARATO</h1>
 
         <div className="space-y-8">
-          {/* Top Section: Controls and Stats */}
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Section: Controls */}
-            <div className="flex flex-col w-full lg:w-1/3 space-y-6">
-              <button 
-                onClick={handleStartGame}
-                disabled={!canStartGame}
-                className={`font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-lg transition-all duration-200 ${
-                  canStartGame 
-                    ? 'bg-green-600 hover:bg-green-700 text-white' 
-                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                <Rocket className="mr-3 h-6 w-6" />
-                Iniciar partida {selectedPlayers.length > 0 && `(${selectedPlayers.length}/3)`}
-              </button>
-              
-              <Link href="/cadastro" className="w-full">
-                <button className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-md hover:bg-gray-50 transition-all duration-200">
-                  <PlusCircle className="mr-3 h-6 w-6 text-green-500" />
-                  cadastrar jogador
-                </button>
-              </Link>
-            </div>
+                  {/* Top Section: Controls and Stats */}
+                  <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Left Section: Controls and Statistics */}
+                    <div className="flex flex-col w-full lg:w-1/3 space-y-6">
+                      <button
+                        onClick={handleStartGame}
+                        disabled={!canStartGame}
+                        className={`font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-lg transition-all duration-200 ${
+                          canStartGame
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <Rocket className="mr-3 h-6 w-6" />
+                        Iniciar partida {selectedPlayers.length > 0 && `(${selectedPlayers.length}/3)`}
+                      </button>
 
-            {/* Center Section: Statistics */}
-            <div className="flex flex-col w-full lg:w-1/3 space-y-6">
-              <div className="border-t border-gray-600 pt-6 grid grid-cols-2 gap-4 text-center">
-                <div>
-                  <p className="text-4xl font-bold text-white">{stats.totalGames}</p>
-                  <p className="text-gray-400">partidas</p>
-                </div>
-                <div>
-                  <p className="text-4xl font-bold text-white">{stats.totalParticipants}</p>
-                  <p className="text-gray-400">participantes</p>
-                </div>
-                <div>
-                  <p className="text-4xl font-bold text-white">{stats.averageScore.toFixed(1)}</p>
-                  <p className="text-gray-400">~pontos</p>
-                </div>
-                <div>
-                  <p className="text-4xl font-bold text-white">{stats.averageDuration.toFixed(0)}</p>
-                  <p className="text-gray-400">~duração</p>
-                </div>
-              </div>
-            </div>
+                      <Link href="/cadastro" className="w-full">
+                        <button className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-md hover:bg-gray-50 transition-all duration-200">
+                          <PlusCircle className="mr-3 h-6 w-6 text-green-500" />
+                          cadastrar jogador
+                        </button>
+                      </Link>
 
-            {/* Right Section: Player Selection and List */}
-            <div className="flex flex-col w-full lg:w-2/3 space-y-6">
+                      {/* Statistics */}
+                      <div className="border-t border-gray-600 pt-6 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                          <p className="text-4xl font-bold text-white">{stats.totalGames}</p>
+                          <p className="text-gray-400">partidas</p>
+                        </div>
+                        <div>
+                          <p className="text-4xl font-bold text-white">{stats.totalParticipants}</p>
+                          <p className="text-gray-400">participantes</p>
+                        </div>
+                        <div>
+                          <p className="text-4xl font-bold text-white">{stats.averageScore.toFixed(1)}</p>
+                          <p className="text-gray-400">~pontos</p>
+                        </div>
+                        <div>
+                          <p className="text-4xl font-bold text-white">{stats.averageDuration.toFixed(0)}</p>
+                          <p className="text-gray-400">~duração</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Section: Player Selection and List */}
+                    <div className="flex flex-col w-full lg:w-2/3 space-y-6">
               {/* Player Slots */}
               <div className="flex justify-center gap-4 mb-6">
                 {[1, 2, 3].map(num => {
@@ -449,13 +447,16 @@ export default function AdminPage() {
                   value={editForm.state}
                   onChange={(e) => {
                     setEditForm(prev => ({ ...prev, state: e.target.value }));
-                    loadCities(e.target.value);
+                    const selectedState = states.find(s => s.sigla === e.target.value);
+                    if (selectedState) {
+                      loadCities(selectedState.id);
+                    }
                   }}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Selecione o estado</option>
-                  {states.map(state => (
-                    <option key={state} value={state}>{state}</option>
+                  {states.map((state, index) => (
+                    <option key={state.sigla} value={state.sigla}>{state.nome}</option>
                   ))}
                 </select>
               </div>
@@ -469,8 +470,8 @@ export default function AdminPage() {
                   disabled={!editForm.state}
                 >
                   <option value="">Selecione a cidade</option>
-                  {cities.map(city => (
-                    <option key={city} value={city}>{city}</option>
+                  {cities.map((city, index) => (
+                    <option key={city.nome} value={city.nome}>{city.nome}</option>
                   ))}
                 </select>
               </div>
