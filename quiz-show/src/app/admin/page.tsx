@@ -202,13 +202,18 @@ export default function AdminPage() {
       
       // Notify server about player selection
       if (adminSocket && newSelection.length > 0) {
+        // Mapear para IDs das páginas de jogador
+        const mappedIds = newSelection.length === 3 ? mapSelectedPlayersToPageIds() : newSelection;
+        
         const payload = {
-          selectedPlayers: newSelection,
+          selectedPlayers: mappedIds,
           participants: participants
         }
         console.log('📡 Emitting admin:select-players with payload:', payload)
+        console.log('📡 Original selection:', newSelection)
+        console.log('📡 Mapped to page IDs:', mappedIds)
         adminSocket.emit('admin:select-players', payload)
-        console.log('📡 Notified server about player selection:', newSelection)
+        console.log('📡 Notified server about player selection:', mappedIds)
       } else {
         console.log('❌ Cannot notify server - adminSocket:', !!adminSocket, 'newSelection:', newSelection.length)
       }
@@ -239,6 +244,21 @@ export default function AdminPage() {
   };
 
   const playerMapping = getPlayerPageMapping();
+
+  // Função para mapear jogadores selecionados para IDs das páginas de jogador
+  const mapSelectedPlayersToPageIds = () => {
+    if (selectedPlayers.length !== 3) return selectedPlayers;
+    
+    // IDs fixos das páginas de jogador
+    const pagePlayerIds = [
+      'cmg34k9wp0005yiuj6qpcg8hm', // Eduardo Lima - /jogador1
+      'cmg34k9wo0003yiujpva13w5t', // Bruno Costa - /jogador2  
+      'cmg34k9wp0004yiujf465dtx1'  // Ana Silva - /jogador3
+    ];
+    
+    // Mapear jogadores selecionados para IDs das páginas
+    return selectedPlayers.map((_, index) => pagePlayerIds[index]);
+  };
 
   const handleStartGame = () => {
     if (adminSocket && canStartGame) {
@@ -536,21 +556,30 @@ export default function AdminPage() {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Object.entries(playerMapping).map(([playerId, info], index) => (
-              <div key={playerId} className="bg-blue-800 p-4 rounded-lg border border-blue-500">
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-white mb-2">
-                    {info.name}
-                  </div>
-                  <div className="text-blue-200 text-sm mb-2">
-                    Abrir página:
-                  </div>
-                  <div className="bg-gray-700 p-2 rounded font-mono text-green-400 text-sm">
-                    localhost:3001{info.page}
+            {selectedPlayers.map((playerId, index) => {
+              const participant = participants.find(p => p.id === playerId);
+              const pageNumber = index + 1;
+              const pageUrl = `/jogador${pageNumber}`;
+              
+              return (
+                <div key={playerId} className="bg-blue-800 p-4 rounded-lg border border-blue-500">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-white mb-2">
+                      {participant?.name || `Jogador ${pageNumber}`}
+                    </div>
+                    <div className="text-blue-200 text-sm mb-2">
+                      Posição #{pageNumber}
+                    </div>
+                    <div className="text-blue-200 text-sm mb-2">
+                      Abrir página:
+                    </div>
+                    <div className="bg-gray-700 p-2 rounded font-mono text-green-400 text-sm">
+                      localhost:3001{pageUrl}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           <div className="mt-4 p-3 bg-blue-700 rounded-lg">
