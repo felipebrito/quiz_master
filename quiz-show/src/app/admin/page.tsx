@@ -465,16 +465,65 @@ export default function AdminPage() {
       </div>
 
       {/* Game Controls */}
-      <div className="mt-8">
-        <GameControls onGameStateChange={(state) => {
-          console.log('🎮 Game state changed:', state)
-          if (state.status === 'active') {
-            setIsGameActive(true)
-          } else if (['stopped', 'finished'].includes(state.status)) {
-            setIsGameActive(false)
-          }
-        }} />
-      </div>
+        {/* Test Connection Section */}
+        <div className="mt-8 bg-gray-800 p-6 rounded-lg">
+          <h2 className="text-2xl font-bold mb-4 text-white">🧪 Teste de Conexão</h2>
+          <p className="text-gray-300 mb-4">
+            Teste a conexão dos jogadores antes de iniciar a partida. 
+            Abra as páginas de teste em abas separadas para simular jogadores conectando.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <a 
+              href="/test-jogador1" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center transition-colors"
+            >
+              <div className="font-semibold">🎮 Jogador 1</div>
+              <div className="text-sm opacity-90">Eduardo Lima</div>
+            </a>
+            <a 
+              href="/test-jogador2" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg text-center transition-colors"
+            >
+              <div className="font-semibold">🎮 Jogador 2</div>
+              <div className="text-sm opacity-90">Bruno Costa</div>
+            </a>
+            <a 
+              href="/test-jogador3" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-center transition-colors"
+            >
+              <div className="font-semibold">🎮 Jogador 3</div>
+              <div className="text-sm opacity-90">Ana Silva</div>
+            </a>
+          </div>
+          
+          <div className="bg-gray-700 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">📋 Instruções:</h3>
+            <ol className="text-gray-300 space-y-1 text-sm">
+              <li>1. Clique nos links acima para abrir as páginas de teste em abas separadas</li>
+              <li>2. Observe o status de conexão dos jogadores abaixo</li>
+              <li>3. Quando todos estiverem conectados, você poderá iniciar a partida</li>
+              <li>4. O jogo só iniciará quando todos os jogadores selecionados estiverem online</li>
+            </ol>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <GameControls onGameStateChange={(state) => {
+            console.log('🎮 Game state changed:', state)
+            if (state.status === 'active') {
+              setIsGameActive(true)
+            } else if (['stopped', 'finished'].includes(state.status)) {
+              setIsGameActive(false)
+            }
+          }} />
+        </div>
 
       {/* Modal de Edição */}
       {showEditModal && editingParticipant && (

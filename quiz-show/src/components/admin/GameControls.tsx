@@ -169,25 +169,77 @@ export default function GameControls({ onGameStateChange }: GameControlsProps) {
         </div>
       )}
 
-      {/* Player Scores */}
+      {/* Player Status & Scores */}
       {gameState.participants.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-lg font-semibold text-white mb-2">Pontuação:</h4>
+          <h4 className="text-lg font-semibold text-white mb-2">Status dos Jogadores:</h4>
           <div className="space-y-2">
             {gameState.participants
               .sort((a, b) => b.points - a.points)
               .map((participant, index) => (
-                <div key={participant.id} className="flex items-center justify-between p-2 bg-gray-700 rounded">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-400">#{index + 1}</span>
-                    <span className="text-white">{participant.name}</span>
-                    <span className={`w-2 h-2 rounded-full ${
-                      participant.connected ? 'bg-green-400' : 'bg-red-400'
-                    }`}></span>
+                <div key={participant.id} className={`flex items-center justify-between p-3 rounded-lg border ${
+                  participant.connected 
+                    ? 'bg-green-900 border-green-600' 
+                    : 'bg-red-900 border-red-600'
+                }`}>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-gray-400 font-mono">#{index + 1}</span>
+                    {participant.connected ? (
+                      <Wifi className="text-green-400" size={16} />
+                    ) : (
+                      <WifiOff className="text-red-400" size={16} />
+                    )}
+                    <span className="text-white font-medium">{participant.name}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      participant.connected 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-red-600 text-white'
+                    }`}>
+                      {participant.connected ? 'ONLINE' : 'OFFLINE'}
+                    </span>
                   </div>
-                  <span className="text-white font-medium">{participant.points} pts</span>
+                  <div className="text-right">
+                    <div className="text-white font-semibold">{participant.points} pts</div>
+                    <div className="text-xs text-gray-400">
+                      {participant.connected ? 'Conectado' : 'Desconectado'}
+                    </div>
+                  </div>
                 </div>
               ))}
+          </div>
+          
+          {/* Connection Summary */}
+          <div className="mt-4 p-3 bg-gray-700 rounded-lg">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Total de Jogadores:</span>
+                <span className="text-white font-semibold">{gameState.controls.totalPlayers}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Conectados:</span>
+                <span className={`font-semibold ${
+                  gameState.controls.connectedPlayers === gameState.controls.totalPlayers 
+                    ? 'text-green-400' 
+                    : 'text-yellow-400'
+                }`}>
+                  {gameState.controls.connectedPlayers}
+                </span>
+              </div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-gray-600">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Status da Conexão:</span>
+                <span className={`font-semibold ${
+                  gameState.controls.connectedPlayers === gameState.controls.totalPlayers 
+                    ? 'text-green-400' 
+                    : 'text-red-400'
+                }`}>
+                  {gameState.controls.connectedPlayers === gameState.controls.totalPlayers 
+                    ? '✅ TODOS CONECTADOS' 
+                    : '⏳ AGUARDANDO CONEXÕES'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
