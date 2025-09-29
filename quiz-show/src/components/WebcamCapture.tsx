@@ -45,9 +45,16 @@ export default function WebcamCapture({ onCapture, onClose }: WebcamCaptureProps
       const context = canvas.getContext('2d');
       
       if (context) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0);
+        // Definir tamanho quadrado (1:1) para a captura
+        const size = Math.min(video.videoWidth, video.videoHeight);
+        canvas.width = size;
+        canvas.height = size;
+        
+        // Centralizar a imagem no canvas quadrado
+        const offsetX = (video.videoWidth - size) / 2;
+        const offsetY = (video.videoHeight - size) / 2;
+        
+        context.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
         
         const imageData = canvas.toDataURL('image/jpeg', 0.8);
         onCapture(imageData);

@@ -310,8 +310,7 @@ export default function AdminPage() {
                             alt={player.name}
                             width={64}
                             height={64}
-                            className="object-cover w-16 h-16 rounded-full"
-                            style={{ width: "auto", height: "auto" }}
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       ) : (
@@ -355,14 +354,13 @@ export default function AdminPage() {
                       }`}
                       onClick={() => canSelect && togglePlayerSelection(participant.id)}
                     >
-                      <div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
                           <Image
                             src={participant.photo_url || '/placeholder-avatar.png'}
                             alt={participant.name}
                             width={64}
                             height={64}
-                            className="object-cover w-16 h-16 rounded-full"
-                            style={{ width: "auto", height: "auto" }}
+                            className="w-full h-full object-cover"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder-avatar.png';
                             }}
@@ -525,12 +523,13 @@ export default function AdminPage() {
 
               {editForm.photo && (
                 <div className="mt-4">
-                  <img
-                    src={editForm.photo}
-                    alt="Preview"
-                    className="w-20 h-20 object-cover rounded-lg"
-                    style={{ width: "auto", height: "auto" }}
-                  />
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+                    <img
+                      src={editForm.photo}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
               )}
             </div>

@@ -1,0 +1,87 @@
+---
+description: Regras para exibição de imagens de participantes no Quiz Show
+globs: **/*.tsx, **/*.ts, **/*.jsx, **/*.js
+alwaysApply: true
+---
+
+# Regras de Exibição de Imagens
+
+## **Imagens de Participantes**
+
+- **Aspecto 1:1 obrigatório:** Todas as imagens de participantes devem ser exibidas em formato circular
+- **Sem cortes:** Use `object-contain` em vez de `object-cover` para evitar cortes
+- **Fundo consistente:** Adicione `bg-gray-700` para imagens com transparência
+- **Centralização:** Use `flex items-center justify-center` no container
+
+## **Classes CSS Padrão**
+
+```tsx
+// ✅ CORRETO: Container circular com overflow hidden
+<div className="w-16 h-16 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+  <Image
+    src={participant.photo_url || '/placeholder-avatar.png'}
+    alt={participant.name}
+    width={64}
+    height={64}
+    className="w-full h-full object-cover"
+  />
+</div>
+
+// ❌ INCORRETO: rounded-full na imagem
+<Image
+  className="object-cover w-16 h-16 rounded-full"
+/>
+```
+
+## **Container Padrão**
+
+```tsx
+// ✅ CORRETO: Container circular com overflow hidden
+<div className="w-16 h-16 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+  <Image className="w-full h-full object-cover" />
+</div>
+```
+
+## **Tratamento de Erros**
+
+- **Fallback obrigatório:** Sempre use `onError` para imagens quebradas
+- **Placeholder consistente:** Use `/placeholder-avatar.png` como fallback
+
+```tsx
+<Image
+  onError={(e) => {
+    e.currentTarget.src = '/placeholder-avatar.png';
+  }}
+/>
+```
+
+## **Formatos Suportados**
+
+- **16:9 (widescreen):** Centralizado no círculo, sem cortes
+- **4:3 (padrão):** Centralizado no círculo, sem cortes  
+- **1:1 (quadrado):** Preenche o círculo completamente
+- **9:16 (vertical):** Centralizado no círculo, sem cortes
+
+## **Aplicação**
+
+- **Lista de participantes:** Use as classes padrão
+- **Jogadores selecionados:** Use as classes padrão
+- **Modal de edição:** Use as classes padrão
+- **Preview de webcam:** Use as classes padrão
+
+## **Exemplo Completo**
+
+```tsx
+<div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+  <Image
+    src={participant.photo_url || '/placeholder-avatar.png'}
+    alt={participant.name}
+    width={64}
+    height={64}
+    className="w-full h-full object-cover"
+    onError={(e) => {
+      e.currentTarget.src = '/placeholder-avatar.png';
+    }}
+  />
+</div>
+```
