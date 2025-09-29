@@ -30,6 +30,8 @@ interface GameState {
     id: string
     name: string
     score: number
+    connected?: boolean
+    photo_url?: string
   }>
   timeRemaining: number
   isRunning: boolean
@@ -38,6 +40,16 @@ interface GameState {
     name: string
     score: number
   } | null
+}
+
+interface SelectedPlayers {
+  participants: Array<{
+    id: string
+    name: string
+    connected: boolean
+    photo_url?: string
+  }>
+  selectedPlayers: string[]
 }
 
 interface LeaderboardEntry {
@@ -61,6 +73,10 @@ export default function DisplayPage() {
     timeRemaining: 30,
     isRunning: false,
     winner: null
+  })
+  const [selectedPlayers, setSelectedPlayers] = useState<SelectedPlayers>({
+    participants: [],
+    selectedPlayers: []
   })
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isIdle, setIsIdle] = useState(true)
@@ -96,6 +112,13 @@ export default function DisplayPage() {
           isRunning: true,
           winner: null
         }))
+        setIsIdle(false)
+      })
+
+      // Listen for selected players
+      socketInstance.on('display:players-selected', (data: SelectedPlayers) => {
+        console.log('👥 Players selected for display:', data)
+        setSelectedPlayers(data)
         setIsIdle(false)
       })
 
@@ -249,6 +272,78 @@ export default function DisplayPage() {
               Aguardando próxima partida...
             </p>
           </div>
+
+          {/* Selected Players Display */}
+          {selectedPlayers.participants.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-4xl font-bold text-white text-center mb-8">Jogadores Selecionados</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {selectedPlayers.participants.map((participant, index) => (
+                  <Card key={participant.id} className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-all duration-300">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center mx-auto mb-4">
+                          {participant.photo_url ? (
+                            <img 
+                              src={participant.photo_url} 
+                              alt={participant.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder-avatar.png';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-3xl font-bold">
+                              {participant.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2">{participant.name}</h3>
+                        <p className="text-blue-200 text-lg">Posição #{index + 1}</p>
+                      </div>
+                      <div className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                        participant.connected 
+                          ? 'bg-green-500 text-white' 
+                          : 'bg-red-500 text-white'
+                      }`}>
+                        {participant.connected ? '🟢 ONLINE' : '🔴 OFFLINE'}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Connection Summary */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
+                <div className="flex items-center justify-center space-x-12 text-white">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-400">
+                      {selectedPlayers.participants.filter(p => p.connected).length}
+                    </div>
+                    <div className="text-lg text-blue-200">Conectados</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">
+                      {selectedPlayers.participants.length}
+                    </div>
+                    <div className="text-lg text-blue-200">Total</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-3xl font-bold ${
+                      selectedPlayers.participants.filter(p => p.connected).length === selectedPlayers.participants.length
+                        ? 'text-green-400' 
+                        : 'text-yellow-400'
+                    }`}>
+                      {selectedPlayers.participants.filter(p => p.connected).length === selectedPlayers.participants.length
+                        ? '✅' 
+                        : '⏳'}
+                    </div>
+                    <div className="text-lg text-blue-200">Status</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Leaderboard */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

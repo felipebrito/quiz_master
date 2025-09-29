@@ -191,12 +191,25 @@ export default function AdminPage() {
 
   const togglePlayerSelection = (participantId: string) => {
     setSelectedPlayers(prev => {
+      let newSelection
       if (prev.includes(participantId)) {
-        return prev.filter(id => id !== participantId);
+        newSelection = prev.filter(id => id !== participantId);
       } else if (prev.length < 3) {
-        return [...prev, participantId];
+        newSelection = [...prev, participantId];
+      } else {
+        newSelection = prev;
       }
-      return prev;
+      
+      // Notify server about player selection
+      if (adminSocket && newSelection.length > 0) {
+        adminSocket.emit('admin:select-players', {
+          selectedPlayers: newSelection,
+          participants: participants
+        })
+        console.log('📡 Notified server about player selection:', newSelection)
+      }
+      
+      return newSelection;
     });
   };
 

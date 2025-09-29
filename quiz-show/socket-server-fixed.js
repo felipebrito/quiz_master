@@ -78,6 +78,8 @@ function broadcastGameState() {
 }
 
 function updatePlayerConnection(participantId, connected, socketId = null, playerName = null) {
+  console.log(`🔄 Updating player connection: ${participantId}, connected: ${connected}, socketId: ${socketId}, name: ${playerName}`)
+  
   const player = connectedPlayers.get(participantId)
   if (player) {
     player.connected = connected
@@ -96,6 +98,7 @@ function updatePlayerConnection(participantId, connected, socketId = null, playe
   if (participant) {
     participant.connected = connected
     if (playerName) participant.name = playerName
+    if (socketId) participant.socketId = socketId
   } else if (connected && playerName) {
     // Add new participant to game state
     participant = {
@@ -106,7 +109,11 @@ function updatePlayerConnection(participantId, connected, socketId = null, playe
       socketId: socketId
     }
     gameState.participants.push(participant)
+    console.log(`➕ Added new participant to game state: ${participantId} (${playerName})`)
   }
+
+  console.log(`📊 Current game state participants:`, gameState.participants.map(p => ({ id: p.id, name: p.name, connected: p.connected })))
+  console.log(`📊 Connected players map:`, Array.from(connectedPlayers.entries()).map(([id, player]) => ({ id, name: player.name, connected: player.connected })))
 
   updateGameControls()
   broadcastGameState()
@@ -240,6 +247,39 @@ adminNamespace.on('connection', (socket) => {
     }
     socket.emit('game:state', currentState)
     console.log('📡 Current state sent to admin:', currentState.status, `(${gameControls.connectedPlayers}/${gameControls.totalPlayers} players)`)
+  })
+
+  // Handle player selection from admin
+  socket.on('admin:select-players', (data) => {
+    console.log('👥 Admin selected players:', data.selectedPlayers)
+    
+    // Update game state with selected players
+    gameState.participants = data.selectedPlayers.map((playerId, index) => {
+      const existingParticipant = gameState.participants.find(p => p.id === playerId)
+      if (existingParticipant) {
+        return existingParticipant
+      }
+      
+      // Find participant data from the provided participants list
+      const participantData = data.participants?.find(p => p.id === playerId)
+      return {
+        id: playerId,
+        name: participantData?.name || `Jogador ${index + 1}`,
+        connected: false,
+        points: 0,
+        socketId: null
+      }
+    })
+    
+    console.log('🎮 Updated game state participants:', gameState.participants)
+    updateGameControls()
+    broadcastGameState()
+    
+    // Also broadcast to display
+    mainNamespace.emit('display:players-selected', {
+      participants: gameState.participants,
+      selectedPlayers: data.selectedPlayers
+    })
   })
 
   socket.on('admin:message:ack', (data) => {
