@@ -28,6 +28,23 @@ model Participant {
   @@map("participants")
 }
 
+model GameConfig {
+  id                String @id @default(cuid())
+  name              String
+  description       String?
+  rounds_count      Int    @default(5)
+  round_duration    Int    @default(30) // seconds
+  question_duration Int    @default(15) // seconds
+  is_active         Boolean @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  games Game[]
+
+  @@map("game_configs")
+}
+
 model Game {
   id            String    @id @default(cuid())
   status        String    @default("waiting") // waiting, active, finished
@@ -35,6 +52,7 @@ model Game {
   started_at    DateTime?
   ended_at      DateTime?
   winner_id     String?
+  config_id     String?
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
@@ -42,6 +60,7 @@ model Game {
   participants GameParticipant[]
   answers      Answer[]
   rounds       Round[]
+  config       GameConfig? @relation(fields: [config_id], references: [id], onDelete: SetNull)
 
   @@map("games")
 }
@@ -63,6 +82,20 @@ model GameParticipant {
   @@map("game_participants")
 }
 
+model Theme {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  color       String @default("#3B82F6") // hex color
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  questions Question[]
+
+  @@map("themes")
+}
+
 model Question {
   id             String @id @default(cuid())
   text           String
@@ -71,12 +104,14 @@ model Question {
   option_c       String
   correct_answer String // 'A', 'B', or 'C'
   difficulty     String @default("medium") // easy, medium, hard
+  theme_id       String?
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
   // Relations
   answers Answer[]
   rounds  Round[]
+  theme   Theme? @relation(fields: [theme_id], references: [id], onDelete: SetNull)
 
   @@map("questions")
 }

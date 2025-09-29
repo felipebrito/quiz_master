@@ -273,6 +273,13 @@ export default function AdminPage() {
                         </button>
                       </Link>
 
+                      <Link href="/admin/game-editor" className="w-full">
+                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg flex items-center justify-center text-xl shadow-md transition-all duration-200">
+                          <Edit className="mr-3 h-6 w-6" />
+                          editor de partidas
+                        </button>
+                      </Link>
+
                       {/* Statistics */}
                       <div className="border-t border-gray-600 pt-6 grid grid-cols-2 gap-4 text-center">
                         <div>
