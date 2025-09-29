@@ -118,8 +118,14 @@ export default function DisplayPage() {
       // Listen for selected players
       socketInstance.on('display:players-selected', (data: SelectedPlayers) => {
         console.log('👥 Players selected for display:', data)
+        console.log('👥 Participants count:', data.participants?.length)
         setSelectedPlayers(data)
         setIsIdle(false)
+      })
+
+      // Log all events received
+      socketInstance.onAny((eventName, ...args) => {
+        console.log(`📨 Display event received: ${eventName}`, args)
       })
 
       socketInstance.on('round:started', (data: any) => {

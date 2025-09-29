@@ -202,11 +202,15 @@ export default function AdminPage() {
       
       // Notify server about player selection
       if (adminSocket && newSelection.length > 0) {
-        adminSocket.emit('admin:select-players', {
+        const payload = {
           selectedPlayers: newSelection,
           participants: participants
-        })
+        }
+        console.log('📡 Emitting admin:select-players with payload:', payload)
+        adminSocket.emit('admin:select-players', payload)
         console.log('📡 Notified server about player selection:', newSelection)
+      } else {
+        console.log('❌ Cannot notify server - adminSocket:', !!adminSocket, 'newSelection:', newSelection.length)
       }
       
       return newSelection;

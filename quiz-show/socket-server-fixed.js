@@ -238,6 +238,11 @@ adminNamespace.on('connection', (socket) => {
   socket.emit('admin:test', { message: 'Test connection' })
   console.log('🧪 Test event sent to admin socket:', socket.id)
 
+  // Log all events received from admin
+  socket.onAny((eventName, ...args) => {
+    console.log(`📨 Admin event received: ${eventName}`, args)
+  })
+
   // Handle admin requests for current state
   socket.on('admin:request-state', () => {
     console.log('📡 Admin requested current state')
@@ -252,6 +257,7 @@ adminNamespace.on('connection', (socket) => {
   // Handle player selection from admin
   socket.on('admin:select-players', (data) => {
     console.log('👥 Admin selected players:', data.selectedPlayers)
+    console.log('👥 Participants data:', data.participants)
     
     // Update game state with selected players
     gameState.participants = data.selectedPlayers.map((playerId, index) => {
@@ -267,7 +273,8 @@ adminNamespace.on('connection', (socket) => {
         name: participantData?.name || `Jogador ${index + 1}`,
         connected: false,
         points: 0,
-        socketId: null
+        socketId: null,
+        photo_url: participantData?.photo_url || null
       }
     })
     
@@ -280,6 +287,7 @@ adminNamespace.on('connection', (socket) => {
       participants: gameState.participants,
       selectedPlayers: data.selectedPlayers
     })
+    console.log('📺 Broadcasted to display:', gameState.participants.length, 'participants')
   })
 
   socket.on('admin:message:ack', (data) => {
