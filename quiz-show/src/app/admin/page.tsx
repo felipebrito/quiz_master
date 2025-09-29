@@ -70,12 +70,12 @@ export default function AdminPage() {
 
     socket?.on('admin:message', (data: any) => {
       console.log('📨 Admin message:', data);
-      if (data.success) {
+      if (data.type === 'success') {
         alert('Jogo iniciado com sucesso!');
         setIsGameActive(true);
         loadStats(); // Reload stats after game start
       } else {
-        alert('Erro ao iniciar jogo: ' + data.error);
+        alert('Erro ao iniciar jogo: ' + data.message);
       }
     });
 
