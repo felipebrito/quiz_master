@@ -61,6 +61,14 @@ export default function AdminPage() {
     }
   };
 
+  // Force refresh game state periodically
+  const refreshGameState = () => {
+    if (adminSocket && adminSocket.connected) {
+      console.log('🔄 Requesting game state refresh...');
+      adminSocket.emit('admin:request-state');
+    }
+  };
+
   // Configure admin socket
   useEffect(() => {
     const socket = getAdminSocket();
@@ -122,6 +130,15 @@ export default function AdminPage() {
       socket?.disconnect();
     };
   }, []);
+
+  // Set up periodic state refresh
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshGameState();
+    }, 2000); // Refresh every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [adminSocket]);
 
   const fetchParticipants = useCallback(async () => {
     console.log('🔄 Fetching participants...');

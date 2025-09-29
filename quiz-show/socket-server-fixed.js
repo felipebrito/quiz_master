@@ -203,6 +203,15 @@ mainNamespace.on('connection', (socket) => {
     if (socket.playerId) {
       updatePlayerConnection(socket.playerId, false)
     }
+    
+    // Also remove from connectedPlayers map
+    for (let [playerId, player] of connectedPlayers.entries()) {
+      if (player.socketId === socket.id) {
+        connectedPlayers.delete(playerId)
+        console.log('🗑️ Removed player from connectedPlayers:', playerId)
+        break
+      }
+    }
   })
 })
 
@@ -221,6 +230,17 @@ adminNamespace.on('connection', (socket) => {
   // Test event to verify socket communication
   socket.emit('admin:test', { message: 'Test connection' })
   console.log('🧪 Test event sent to admin socket:', socket.id)
+
+  // Handle admin requests for current state
+  socket.on('admin:request-state', () => {
+    console.log('📡 Admin requested current state')
+    const currentState = {
+      ...gameState,
+      controls: gameControls
+    }
+    socket.emit('game:state', currentState)
+    console.log('📡 Current state sent to admin:', currentState.status, `(${gameControls.connectedPlayers}/${gameControls.totalPlayers} players)`)
+  })
 
   socket.on('admin:message:ack', (data) => {
     console.log('📨 Admin message acknowledgment received:', data)
