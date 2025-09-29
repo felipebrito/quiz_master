@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getAdminSocket } from '@/lib/socket'
+import { Wifi, WifiOff } from 'lucide-react'
 
 interface GameState {
   id: string | null
