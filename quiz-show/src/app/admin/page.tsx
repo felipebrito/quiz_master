@@ -66,15 +66,22 @@ export default function AdminPage() {
 
     socket?.on('connect', () => {
       console.log('✅ Admin connected to socket server');
+      console.log('🔌 Socket ID:', socket?.id);
+    });
+
+    socket?.on('disconnect', (reason) => {
+      console.log('❌ Admin disconnected:', reason);
     });
 
     socket?.on('admin:message', (data: any) => {
-      console.log('📨 Admin message:', data);
+      console.log('📨 Admin message received:', data);
       if (data.type === 'success') {
+        console.log('✅ Game started successfully!');
         alert('Jogo iniciado com sucesso!');
         setIsGameActive(true);
         loadStats(); // Reload stats after game start
       } else {
+        console.log('❌ Game start error:', data.message);
         alert('Erro ao iniciar jogo: ' + data.message);
       }
     });
@@ -169,9 +176,13 @@ export default function AdminPage() {
   const handleStartGame = () => {
     if (adminSocket && canStartGame) {
       console.log('🎮 Starting game with participants:', selectedPlayers);
+      console.log('🔌 Admin socket connected:', adminSocket.connected);
       adminSocket.emit('admin:game:start', {
         participantIds: selectedPlayers
       });
+      console.log('📤 Event emitted, waiting for response...');
+    } else {
+      console.log('❌ Cannot start game:', { adminSocket: !!adminSocket, canStartGame });
     }
   };
 
