@@ -92,10 +92,20 @@ function updatePlayerConnection(participantId, connected, socketId = null, playe
   }
 
   // Update game state participants
-  const participant = gameState.participants.find(p => p.id === participantId)
+  let participant = gameState.participants.find(p => p.id === participantId)
   if (participant) {
     participant.connected = connected
     if (playerName) participant.name = playerName
+  } else if (connected && playerName) {
+    // Add new participant to game state
+    participant = {
+      id: participantId,
+      name: playerName,
+      connected: true,
+      points: 0,
+      socketId: socketId
+    }
+    gameState.participants.push(participant)
   }
 
   updateGameControls()
