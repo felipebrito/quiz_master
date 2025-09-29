@@ -21,10 +21,20 @@ export const getSocket = (): Socket | null => {
 // Admin namespace socket
 export const getAdminSocket = (): Socket | null => {
   if (typeof window !== 'undefined' && !adminSocket) {
+    console.log('🔌 Creating admin socket connection to:', `${SOCKET_URL}/admin`)
     adminSocket = ClientIO(`${SOCKET_URL}/admin`, {
       transports: ['websocket', 'polling']
     })
-    console.log('🔌 Connected to admin namespace')
+    
+    adminSocket.on('connect', () => {
+      console.log('✅ Admin socket connected with ID:', adminSocket?.id)
+    })
+    
+    adminSocket.on('disconnect', (reason) => {
+      console.log('❌ Admin socket disconnected:', reason)
+    })
+    
+    console.log('🔌 Admin socket created')
   }
   return adminSocket
 }
