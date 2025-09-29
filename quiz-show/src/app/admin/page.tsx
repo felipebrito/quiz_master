@@ -93,6 +93,8 @@ export default function AdminPage() {
 
     socket?.on('game:state', (state: any) => {
       console.log('🎮 Game state received in admin:', state);
+      console.log('🎮 Participants:', state.participants);
+      console.log('🎮 Connected players:', state.controls?.connectedPlayers);
       setGameState(state);
     });
 

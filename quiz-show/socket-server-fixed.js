@@ -211,10 +211,12 @@ adminNamespace.on('connection', (socket) => {
   console.log('👨‍💼 Admin connected:', socket.id)
 
   // Send current game state to admin
-  socket.emit('game:state', {
+  const currentState = {
     ...gameState,
     controls: gameControls
-  })
+  }
+  socket.emit('game:state', currentState)
+  console.log('📡 Current game state sent to admin on connect:', currentState.status, `(${gameControls.connectedPlayers}/${gameControls.totalPlayers} players)`)
 
   // Test event to verify socket communication
   socket.emit('admin:test', { message: 'Test connection' })
