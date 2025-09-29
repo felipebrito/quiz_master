@@ -19,6 +19,9 @@ export default function HomePage() {
             <Link href="/ranking" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>
               Ranking
             </Link>
+            <Link href="/admin/game-editor" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>
+              Editor
+            </Link>
           </div>
         </div>
       </nav>
@@ -38,6 +41,9 @@ export default function HomePage() {
           </Link>
           <Link href="/ranking" style={{ background: 'rgba(245, 158, 11, 0.9)', color: 'white', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '1.1rem', fontWeight: '500', transition: 'background 0.2s' }}>
             🏆 Ranking
+          </Link>
+          <Link href="/admin/game-editor" style={{ background: 'rgba(236, 72, 153, 0.9)', color: 'white', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '1.1rem', fontWeight: '500', transition: 'background 0.2s' }}>
+            ✏️ Editor de Partidas
           </Link>
         </div>
         <div style={{ marginTop: '60px', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '12px', padding: '30px', maxWidth: '800px', margin: '60px auto 0' }}>
