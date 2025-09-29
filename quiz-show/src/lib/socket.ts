@@ -1,7 +1,7 @@
 import { io as ClientIO, Socket } from 'socket.io-client'
 
 // Socket.IO server configuration
-const SOCKET_URL = 'http://localhost:3001'
+const SOCKET_URL = 'http://localhost:3002'
 
 // Global socket instances
 let socket: Socket | null = null

@@ -364,7 +364,7 @@ async function endGame() {
 }
 
 // Start server
-const PORT = 3001
+const PORT = 3002
 httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('🚀 Socket.IO server running on port', PORT)
   console.log('📡 Main namespace: ws://0.0.0.0:' + PORT)
