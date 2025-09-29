@@ -190,10 +190,13 @@ adminNamespace.on('connection', (socket) => {
       await startRound(1)
 
       // Notify admin
+      console.log('📤 Emitting admin:message to socket:', socket.id)
+      console.log('🔌 Socket connected:', socket.connected)
       socket.emit('admin:message', {
         type: 'success',
         message: 'Game started successfully!'
       })
+      console.log('✅ admin:message event emitted')
 
       console.log('🎮 Game started successfully with', participants.length, 'participants')
 
