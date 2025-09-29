@@ -475,7 +475,7 @@ export default function AdminPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <a 
-              href="/test-jogador1" 
+              href="http://localhost:3001/test-jogador1" 
               target="_blank" 
               rel="noopener noreferrer"
               className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center transition-colors"
@@ -484,7 +484,7 @@ export default function AdminPage() {
               <div className="text-sm opacity-90">Eduardo Lima</div>
             </a>
             <a 
-              href="/test-jogador2" 
+              href="http://localhost:3001/test-jogador2" 
               target="_blank" 
               rel="noopener noreferrer"
               className="p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg text-center transition-colors"
@@ -493,7 +493,7 @@ export default function AdminPage() {
               <div className="text-sm opacity-90">Bruno Costa</div>
             </a>
             <a 
-              href="/test-jogador3" 
+              href="http://localhost:3001/test-jogador3" 
               target="_blank" 
               rel="noopener noreferrer"
               className="p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-center transition-colors"
