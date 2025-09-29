@@ -87,11 +87,40 @@ export default function Jogador3Page() {
     socketInstance.on('connect', () => {
       console.log('✅ Connected to server')
       setIsConnected(true)
+      
+      // Register as player
+      socketInstance.emit('player:register', {
+        playerId: 'cmg34k9wp0004yiujf465dtx1', // Ana Silva ID
+        playerName: 'Ana Silva'
+      })
+
+      // Start ping/pong to keep connection alive
+      const pingInterval = setInterval(() => {
+        if (socketInstance && socketInstance.connected) {
+          socketInstance.emit('player:ping', {
+            playerId: 'cmg34k9wp0004yiujf465dtx1',
+            playerName: 'Ana Silva'
+          })
+        }
+      }, 5000) // Ping every 5 seconds
+
+      // Store interval for cleanup
+      socketInstance.pingInterval = pingInterval
     })
 
     socketInstance.on('disconnect', () => {
       console.log('❌ Disconnected from server')
       setIsConnected(false)
+      
+      // Clear ping interval
+      if (socketInstance.pingInterval) {
+        clearInterval(socketInstance.pingInterval)
+      }
+    })
+
+    // Handle pong responses
+    socketInstance.on('player:pong', (data) => {
+      console.log('🏓 Pong received:', data)
     })
 
     // Game events

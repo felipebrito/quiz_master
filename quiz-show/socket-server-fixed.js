@@ -133,6 +133,16 @@ mainNamespace.on('connection', (socket) => {
     })
   })
 
+  // Ping/Pong system for connection verification
+  socket.on('player:ping', (data) => {
+    console.log('🏓 Player ping received from:', data.playerName || 'Unknown')
+    socket.emit('player:pong', {
+      timestamp: Date.now(),
+      playerId: data.playerId,
+      playerName: data.playerName
+    })
+  })
+
   socket.on('player:answer', async (data) => {
     try {
       console.log('📝 Player answer received:', data)
