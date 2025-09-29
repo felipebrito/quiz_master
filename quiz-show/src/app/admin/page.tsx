@@ -80,6 +80,9 @@ export default function AdminPage() {
         alert('Jogo iniciado com sucesso!');
         setIsGameActive(true);
         loadStats(); // Reload stats after game start
+        
+        // Send acknowledgment back to server
+        socket?.emit('admin:message:ack', { received: true });
       } else {
         console.log('❌ Game start error:', data.message);
         alert('Erro ao iniciar jogo: ' + data.message);

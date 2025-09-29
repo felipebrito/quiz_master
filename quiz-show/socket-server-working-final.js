@@ -95,6 +95,10 @@ mainNamespace.on('connection', (socket) => {
 adminNamespace.on('connection', (socket) => {
   console.log('👨‍💼 Admin connected:', socket.id)
 
+  socket.on('admin:message:ack', (data) => {
+    console.log('📨 Admin message acknowledgment received:', data)
+  })
+
   socket.on('admin:game:start', async (data) => {
     try {
       console.log('👨‍💼 Admin requested game start with participants:', data.participantIds)
@@ -195,6 +199,8 @@ adminNamespace.on('connection', (socket) => {
       socket.emit('admin:message', {
         type: 'success',
         message: 'Game started successfully!'
+      }, (response) => {
+        console.log('📨 Admin message callback response:', response)
       })
       console.log('✅ admin:message event emitted')
 
