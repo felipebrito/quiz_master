@@ -37,10 +37,12 @@ interface GameControls {
 }
 
 interface GameControlsProps {
+  selectedPlayers?: string[];
+  participants?: any[];
   onGameStateChange?: (state: GameState) => void
 }
 
-export default function GameControls({ onGameStateChange }: GameControlsProps) {
+export default function GameControls({ selectedPlayers = [], participants = [], onGameStateChange }: GameControlsProps) {
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [controls, setControls] = useState<GameControls>({
     canStart: false,
@@ -171,59 +173,64 @@ export default function GameControls({ onGameStateChange }: GameControlsProps) {
       )}
 
       {/* Player Status & Scores */}
-      {gameState.participants.length > 0 && (
+      {selectedPlayers.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-lg font-semibold text-white mb-2">Status dos Jogadores:</h4>
+          <h4 className="text-lg font-semibold text-white mb-2">Status dos Jogadores Selecionados:</h4>
           <div className="space-y-2">
-            {gameState.participants
-              .sort((a, b) => b.points - a.points)
-              .map((participant, index) => (
+            {selectedPlayers.map((playerId, index) => {
+              const participant = participants.find(p => p.id === playerId);
+              const gameParticipant = gameState?.participants?.find(p => p.id === playerId);
+              
+              if (!participant) return null;
+              
+              return (
                 <div key={participant.id} className={`flex items-center justify-between p-3 rounded-lg border ${
-                  participant.connected 
+                  gameParticipant?.connected 
                     ? 'bg-green-900 border-green-600' 
                     : 'bg-red-900 border-red-600'
                 }`}>
                   <div className="flex items-center space-x-3">
                     <span className="text-gray-400 font-mono">#{index + 1}</span>
-                    {participant.connected ? (
+                    {gameParticipant?.connected ? (
                       <Wifi className="text-green-400" size={16} />
                     ) : (
                       <WifiOff className="text-red-400" size={16} />
                     )}
                     <span className="text-white font-medium">{participant.name}</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      participant.connected 
+                      gameParticipant?.connected 
                         ? 'bg-green-600 text-white' 
                         : 'bg-red-600 text-white'
                     }`}>
-                      {participant.connected ? 'ONLINE' : 'OFFLINE'}
+                      {gameParticipant?.connected ? 'ONLINE' : 'OFFLINE'}
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="text-white font-semibold">{participant.points} pts</div>
+                    <div className="text-white font-semibold">{gameParticipant?.points || participant.points} pts</div>
                     <div className="text-xs text-gray-400">
-                      {participant.connected ? 'Conectado' : 'Desconectado'}
+                      {gameParticipant?.connected ? 'Conectado' : 'Desconectado'}
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
           
           {/* Connection Summary */}
           <div className="mt-4 p-3 bg-gray-700 rounded-lg">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-300">Total de Jogadores:</span>
-                <span className="text-white font-semibold">{gameState.controls.totalPlayers}</span>
+                <span className="text-gray-300">Jogadores Selecionados:</span>
+                <span className="text-white font-semibold">{selectedPlayers.length}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-300">Conectados:</span>
                 <span className={`font-semibold ${
-                  gameState.controls.connectedPlayers === gameState.controls.totalPlayers 
+                  selectedPlayers.every(id => gameState?.participants?.find(p => p.id === id)?.connected)
                     ? 'text-green-400' 
                     : 'text-yellow-400'
                 }`}>
-                  {gameState.controls.connectedPlayers}
+                  {selectedPlayers.filter(id => gameState?.participants?.find(p => p.id === id)?.connected).length}
                 </span>
               </div>
             </div>
@@ -231,11 +238,11 @@ export default function GameControls({ onGameStateChange }: GameControlsProps) {
               <div className="flex items-center justify-between">
                 <span className="text-gray-300">Status da Conexão:</span>
                 <span className={`font-semibold ${
-                  gameState.controls.connectedPlayers === gameState.controls.totalPlayers 
+                  selectedPlayers.every(id => gameState?.participants?.find(p => p.id === id)?.connected)
                     ? 'text-green-400' 
                     : 'text-red-400'
                 }`}>
-                  {gameState.controls.connectedPlayers === gameState.controls.totalPlayers 
+                  {selectedPlayers.every(id => gameState?.participants?.find(p => p.id === id)?.connected)
                     ? '✅ TODOS CONECTADOS' 
                     : '⏳ AGUARDANDO CONEXÕES'}
                 </span>

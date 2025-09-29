@@ -492,14 +492,18 @@ export default function AdminPage() {
       {/* Game Controls */}
 
         <div className="mt-8">
-          <GameControls onGameStateChange={(state) => {
-            console.log('🎮 Game state changed:', state)
-            if (state.status === 'active') {
-              setIsGameActive(true)
-            } else if (['stopped', 'finished'].includes(state.status)) {
-              setIsGameActive(false)
-            }
-          }} />
+          <GameControls 
+            selectedPlayers={selectedPlayers}
+            participants={participants}
+            onGameStateChange={(state) => {
+              console.log('🎮 Game state changed:', state)
+              if (state.status === 'active') {
+                setIsGameActive(true)
+              } else if (['stopped', 'finished'].includes(state.status)) {
+                setIsGameActive(false)
+              }
+            }} 
+          />
         </div>
 
       {/* Modal de Edição */}
