@@ -88,21 +88,24 @@ export default function Jogador3Page() {
       console.log('✅ Connected to server')
       setIsConnected(true)
       
-      // Register as player
-      socketInstance.emit('player:register', {
-        playerId: 'cmg34k9wp0004yiujf465dtx1', // Ana Silva ID
-        playerName: 'Ana Silva'
-      })
+        // Register as player - usar ID dinâmico baseado na URL
+        const playerId = 'cmg34k9wp0004yiujf465dtx1'; // Ana Silva ID
+        const playerName = 'Ana Silva';
+        
+        socketInstance.emit('player:register', {
+          playerId: playerId,
+          playerName: playerName
+        })
 
-      // Start ping/pong to keep connection alive
-      const pingInterval = setInterval(() => {
-        if (socketInstance && socketInstance.connected) {
-          socketInstance.emit('player:ping', {
-            playerId: 'cmg34k9wp0004yiujf465dtx1',
-            playerName: 'Ana Silva'
-          })
-        }
-      }, 5000) // Ping every 5 seconds
+        // Start ping/pong to keep connection alive
+        const pingInterval = setInterval(() => {
+          if (socketInstance && socketInstance.connected) {
+            socketInstance.emit('player:ping', {
+              playerId: playerId,
+              playerName: playerName
+            })
+          }
+        }, 5000) // Ping every 5 seconds
 
       // Store interval for cleanup
       socketInstance.pingInterval = pingInterval

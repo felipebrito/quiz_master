@@ -202,6 +202,27 @@ export default function AdminPage() {
 
   const canStartGame = selectedPlayers.length === 3;
 
+  // Mapear jogadores selecionados para páginas de jogador
+  const getPlayerPageMapping = () => {
+    if (selectedPlayers.length !== 3) return {};
+    
+    const mapping: { [key: string]: { page: string, name: string } } = {};
+    
+    selectedPlayers.forEach((playerId, index) => {
+      const participant = participants.find(p => p.id === playerId);
+      if (participant) {
+        mapping[playerId] = {
+          page: `/jogador${index + 1}`,
+          name: participant.name
+        };
+      }
+    });
+    
+    return mapping;
+  };
+
+  const playerMapping = getPlayerPageMapping();
+
   const handleStartGame = () => {
     if (adminSocket && canStartGame) {
       console.log('🎮 Starting game with participants:', selectedPlayers);
@@ -489,8 +510,42 @@ export default function AdminPage() {
         <GameMonitor adminSocket={adminSocket} />
       </div>
 
-      {/* Game Controls */}
+      {/* Player Page Instructions */}
+      {selectedPlayers.length === 3 && (
+        <div className="mt-8 bg-blue-900 p-6 rounded-lg border border-blue-600">
+          <h2 className="text-2xl font-bold mb-4 text-white">📋 Instruções para os Jogadores</h2>
+          <p className="text-blue-200 mb-4">
+            Abra as seguintes páginas para os jogadores selecionados:
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Object.entries(playerMapping).map(([playerId, info], index) => (
+              <div key={playerId} className="bg-blue-800 p-4 rounded-lg border border-blue-500">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-white mb-2">
+                    {info.name}
+                  </div>
+                  <div className="text-blue-200 text-sm mb-2">
+                    Abrir página:
+                  </div>
+                  <div className="bg-gray-700 p-2 rounded font-mono text-green-400 text-sm">
+                    localhost:3001{info.page}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 p-3 bg-blue-700 rounded-lg">
+            <p className="text-blue-100 text-sm">
+              <strong>Importante:</strong> Cada jogador deve abrir sua página correspondente. 
+              O status de conexão será verificado automaticamente.
+            </p>
+          </div>
+        </div>
+      )}
 
+      {/* Game Controls */}
         <div className="mt-8">
           <GameControls 
             selectedPlayers={selectedPlayers}

@@ -88,21 +88,24 @@ export default function Jogador1Page() {
       console.log('✅ Connected to server')
       setIsConnected(true)
       
-      // Register as player
-      socketInstance.emit('player:register', {
-        playerId: 'cmg34k9wp0005yiuj6qpcg8hm', // Eduardo Lima ID
-        playerName: 'Eduardo Lima'
-      })
+        // Register as player - usar ID dinâmico baseado na URL
+        const playerId = 'cmg34k9wp0005yiuj6qpcg8hm'; // Eduardo Lima ID
+        const playerName = 'Eduardo Lima';
+        
+        socketInstance.emit('player:register', {
+          playerId: playerId,
+          playerName: playerName
+        })
 
-      // Start ping/pong to keep connection alive
-      const pingInterval = setInterval(() => {
-        if (socketInstance && socketInstance.connected) {
-          socketInstance.emit('player:ping', {
-            playerId: 'cmg34k9wp0005yiuj6qpcg8hm',
-            playerName: 'Eduardo Lima'
-          })
-        }
-      }, 5000) // Ping every 5 seconds
+        // Start ping/pong to keep connection alive
+        const pingInterval = setInterval(() => {
+          if (socketInstance && socketInstance.connected) {
+            socketInstance.emit('player:ping', {
+              playerId: playerId,
+              playerName: playerName
+            })
+          }
+        }, 5000) // Ping every 5 seconds
 
       // Store interval for cleanup
       socketInstance.pingInterval = pingInterval
