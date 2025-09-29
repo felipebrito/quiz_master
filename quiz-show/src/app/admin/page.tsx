@@ -38,6 +38,7 @@ export default function AdminPage() {
   });
   const [adminSocket, setAdminSocket] = useState<any>(null);
   const [isGameActive, setIsGameActive] = useState(false);
+  const [gameState, setGameState] = useState<any>(null);
   const [stats, setStats] = useState({
     totalGames: 0,
     totalParticipants: 0,
@@ -88,6 +89,11 @@ export default function AdminPage() {
         console.log('❌ Game start error:', data.message);
         alert('Erro ao iniciar jogo: ' + data.message);
       }
+    });
+
+    socket?.on('game:state', (state: any) => {
+      console.log('🎮 Game state received in admin:', state);
+      setGameState(state);
     });
 
     socket?.on('game:stopped', (data: any) => {
@@ -467,51 +473,62 @@ export default function AdminPage() {
       {/* Game Controls */}
         {/* Connection Status Section */}
         <div className="mt-8 bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-2xl font-bold mb-4 text-white">🔍 Verificação de Conexão</h2>
+          <h2 className="text-2xl font-bold mb-4 text-white">🔍 Status de Conexão dos Jogadores</h2>
           <p className="text-gray-300 mb-4">
-            Verifique se as páginas dos jogadores estão abertas e operando. 
-            O sistema detecta automaticamente quando os jogadores estão conectados.
+            Monitore o status de conexão dos jogadores em tempo real. 
+            Os botões mostram se cada jogador está online ou offline.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <a 
-              href="http://localhost:3001/jogador1" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center transition-colors"
-            >
-              <div className="font-semibold">🎮 Jogador 1</div>
-              <div className="text-sm opacity-90">Eduardo Lima</div>
-              <div className="text-xs mt-1 opacity-75">Página do Jogador</div>
-            </a>
-            <a 
-              href="http://localhost:3001/jogador2" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg text-center transition-colors"
-            >
-              <div className="font-semibold">🎮 Jogador 2</div>
-              <div className="text-sm opacity-90">Bruno Costa</div>
-              <div className="text-xs mt-1 opacity-75">Página do Jogador</div>
-            </a>
-            <a 
-              href="http://localhost:3001/jogador3" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-center transition-colors"
-            >
-              <div className="font-semibold">🎮 Jogador 3</div>
-              <div className="text-sm opacity-90">Ana Silva</div>
-              <div className="text-xs mt-1 opacity-75">Página do Jogador</div>
-            </a>
+            <div className={`p-4 rounded-lg text-center transition-all duration-300 ${
+              gameState?.participants?.find(p => p.id === 'cmg34k9wp0005yiuj6qpcg8hm')?.connected 
+                ? 'bg-green-600 border-2 border-green-400' 
+                : 'bg-red-600 border-2 border-red-400'
+            }`}>
+              <div className="font-semibold text-white">🎮 Jogador 1</div>
+              <div className="text-sm text-white opacity-90">Eduardo Lima</div>
+              <div className="text-xs mt-2 font-bold">
+                {gameState?.participants?.find(p => p.id === 'cmg34k9wp0005yiuj6qpcg8hm')?.connected 
+                  ? '✅ ONLINE' 
+                  : '❌ OFFLINE'}
+              </div>
+            </div>
+            
+            <div className={`p-4 rounded-lg text-center transition-all duration-300 ${
+              gameState?.participants?.find(p => p.id === 'cmg34k9wo0003yiujpva13w5t')?.connected 
+                ? 'bg-green-600 border-2 border-green-400' 
+                : 'bg-red-600 border-2 border-red-400'
+            }`}>
+              <div className="font-semibold text-white">🎮 Jogador 2</div>
+              <div className="text-sm text-white opacity-90">Bruno Costa</div>
+              <div className="text-xs mt-2 font-bold">
+                {gameState?.participants?.find(p => p.id === 'cmg34k9wo0003yiujpva13w5t')?.connected 
+                  ? '✅ ONLINE' 
+                  : '❌ OFFLINE'}
+              </div>
+            </div>
+            
+            <div className={`p-4 rounded-lg text-center transition-all duration-300 ${
+              gameState?.participants?.find(p => p.id === 'cmg34k9wp0004yiujf465dtx1')?.connected 
+                ? 'bg-green-600 border-2 border-green-400' 
+                : 'bg-red-600 border-2 border-red-400'
+            }`}>
+              <div className="font-semibold text-white">🎮 Jogador 3</div>
+              <div className="text-sm text-white opacity-90">Ana Silva</div>
+              <div className="text-xs mt-2 font-bold">
+                {gameState?.participants?.find(p => p.id === 'cmg34k9wp0004yiujf465dtx1')?.connected 
+                  ? '✅ ONLINE' 
+                  : '❌ OFFLINE'}
+              </div>
+            </div>
           </div>
           
           <div className="bg-gray-700 p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-white mb-2">📋 Instruções:</h3>
             <ol className="text-gray-300 space-y-1 text-sm">
-              <li>1. Clique nos links acima para abrir as páginas dos jogadores em abas separadas</li>
+              <li>1. Abra as páginas dos jogadores: <code className="bg-gray-600 px-1 rounded">/jogador1</code>, <code className="bg-gray-600 px-1 rounded">/jogador2</code>, <code className="bg-gray-600 px-1 rounded">/jogador3</code></li>
               <li>2. As páginas se conectarão automaticamente ao servidor</li>
-              <li>3. Observe o status de conexão sendo atualizado em tempo real abaixo</li>
+              <li>3. Observe o status de conexão sendo atualizado em tempo real nos botões acima</li>
               <li>4. O jogo só iniciará quando todos os jogadores selecionados estiverem online</li>
             </ol>
           </div>
