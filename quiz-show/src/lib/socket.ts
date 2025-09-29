@@ -26,13 +26,21 @@ export const getAdminSocket = (): Socket | null => {
       transports: ['websocket', 'polling']
     })
     
-    adminSocket.on('connect', () => {
-      console.log('✅ Admin socket connected with ID:', adminSocket?.id)
-    })
-    
-    adminSocket.on('disconnect', (reason) => {
-      console.log('❌ Admin socket disconnected:', reason)
-    })
+        adminSocket.on('connect', () => {
+          console.log('✅ Admin socket connected with ID:', adminSocket?.id)
+        })
+
+        adminSocket.on('disconnect', (reason) => {
+          console.log('❌ Admin socket disconnected:', reason)
+        })
+
+        adminSocket.on('admin:message', (data) => {
+          console.log('📨 Admin socket received admin:message:', data)
+        })
+
+        adminSocket.on('admin:test', (data) => {
+          console.log('🧪 Admin socket received admin:test:', data)
+        })
     
     console.log('🔌 Admin socket created')
   }

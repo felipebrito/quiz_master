@@ -19,17 +19,98 @@ const mainNamespace = io.of('/')
 // Admin namespace
 const adminNamespace = io.of('/admin')
 
-// Game state
+// Enhanced Game State Management
 let gameState = {
-  isActive: false,
-  gameId: null,
+  id: null,
+  status: 'waiting', // waiting, starting, active, paused, finished, stopped
   currentRound: 0,
   totalRounds: 8,
   participants: [],
-  questions: [],
   currentQuestion: null,
-  timeRemaining: 30,
-  isRunning: false
+  startTime: null,
+  endTime: null,
+  roundTimer: null,
+  questionTimer: null
+}
+
+let connectedPlayers = new Map() // participantId -> { socketId, name, connected }
+let gameControls = {
+  canStart: false,
+  canPause: false,
+  canResume: false,
+  canStop: false,
+  canNextRound: false,
+  connectedPlayers: 0,
+  totalPlayers: 0
+}
+
+// Utility functions
+function updateGameControls() {
+  const allConnected = gameState.participants.every(p => p.connected)
+  const connectedCount = gameState.participants.filter(p => p.connected).length
+
+  gameControls = {
+    canStart: gameState.status === 'waiting' && allConnected && gameState.participants.length > 0,
+    canPause: gameState.status === 'active',
+    canResume: gameState.status === 'paused',
+    canStop: ['active', 'paused'].includes(gameState.status),
+    canNextRound: gameState.status === 'active' && gameState.currentRound < gameState.totalRounds,
+    connectedPlayers: connectedCount,
+    totalPlayers: gameState.participants.length
+  }
+
+  console.log('🎮 Game controls updated:', gameControls)
+}
+
+function broadcastGameState() {
+  const state = {
+    ...gameState,
+    controls: gameControls
+  }
+  
+  // Broadcast to admin
+  adminNamespace.emit('game:state', state)
+  
+  // Broadcast to players
+  mainNamespace.emit('game:state', state)
+  
+  console.log('📡 Game state broadcasted:', state.status, `(${gameControls.connectedPlayers}/${gameControls.totalPlayers} players)`)
+}
+
+function updatePlayerConnection(participantId, connected, socketId = null, playerName = null) {
+  const player = connectedPlayers.get(participantId)
+  if (player) {
+    player.connected = connected
+    if (socketId) player.socketId = socketId
+    if (playerName) player.name = playerName
+  } else if (connected && socketId && playerName) {
+    connectedPlayers.set(participantId, {
+      socketId,
+      name: playerName,
+      connected: true
+    })
+  }
+
+  // Update game state participants
+  const participant = gameState.participants.find(p => p.id === participantId)
+  if (participant) {
+    participant.connected = connected
+    if (playerName) participant.name = playerName
+  }
+
+  updateGameControls()
+  broadcastGameState()
+}
+
+function clearTimers() {
+  if (gameState.roundTimer) {
+    clearTimeout(gameState.roundTimer)
+    gameState.roundTimer = null
+  }
+  if (gameState.questionTimer) {
+    clearTimeout(gameState.questionTimer)
+    gameState.questionTimer = null
+  }
 }
 
 // Main namespace events
@@ -40,6 +121,9 @@ mainNamespace.on('connection', (socket) => {
     console.log('👤 Player registered:', data.playerName, '(' + data.playerId + ')')
     socket.playerId = data.playerId
     socket.playerName = data.playerName
+    
+    // Update connection status
+    updatePlayerConnection(data.playerId, true, socket.id, data.playerName)
   })
 
   socket.on('player:answer', async (data) => {
@@ -88,6 +172,10 @@ mainNamespace.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('❌ Player disconnected:', socket.id, 'reason:', socket.disconnectReason)
+    
+    if (socket.playerId) {
+      updatePlayerConnection(socket.playerId, false)
+    }
   })
 })
 
@@ -98,6 +186,10 @@ adminNamespace.on('connection', (socket) => {
   socket.on('admin:message:ack', (data) => {
     console.log('📨 Admin message acknowledgment received:', data)
   })
+
+  // Test event to verify socket communication
+  socket.emit('admin:test', { message: 'Test connection' })
+  console.log('🧪 Test event sent to admin socket:', socket.id)
 
   socket.on('admin:game:start', async (data) => {
     try {
@@ -196,6 +288,8 @@ adminNamespace.on('connection', (socket) => {
       // Notify admin
       console.log('📤 Emitting admin:message to socket:', socket.id)
       console.log('🔌 Socket connected:', socket.connected)
+      console.log('🔌 Socket in admin namespace:', socket.nsp.name)
+      
       socket.emit('admin:message', {
         type: 'success',
         message: 'Game started successfully!'

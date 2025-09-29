@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { useStatesCities } from '@/hooks/useStatesCities';
 import WebcamCapture from '@/components/WebcamCapture';
 import { getAdminSocket } from '@/lib/socket';
-import GameMonitor from '@/components/admin/GameMonitor';
+import GameMonitor from '@/components/admin/GameMonitor'
+import GameControls from '@/components/admin/GameControls';
 
 interface Participant {
   id: string;
@@ -461,6 +462,18 @@ export default function AdminPage() {
       {/* Game Monitor */}
       <div className="mt-8">
         <GameMonitor adminSocket={adminSocket} />
+      </div>
+
+      {/* Game Controls */}
+      <div className="mt-8">
+        <GameControls onGameStateChange={(state) => {
+          console.log('🎮 Game state changed:', state)
+          if (state.status === 'active') {
+            setIsGameActive(true)
+          } else if (['stopped', 'finished'].includes(state.status)) {
+            setIsGameActive(false)
+          }
+        }} />
       </div>
 
       {/* Modal de Edição */}
